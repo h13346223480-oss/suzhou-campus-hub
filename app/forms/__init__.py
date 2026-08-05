@@ -54,6 +54,14 @@ class PostForm(FlaskForm):
     submit = SubmitField("提交审核")
 
 
+class GuideForm(FlaskForm):
+    title = StringField("标题", validators=[DataRequired(), Length(min=4, max=120), no_html])
+    category = SelectField("分类", choices=[(item, item) for item in GUIDE_CATEGORIES])
+    summary = StringField("摘要", validators=[Optional(), Length(max=240)])
+    content = TextAreaField("正文（支持富文本）", validators=[DataRequired(), Length(min=10, max=30000)])
+    submit = SubmitField("发布指南")
+
+
 class CommentForm(FlaskForm):
     content = TextAreaField("评论", validators=[DataRequired(), Length(min=2, max=1000), no_html])
     submit = SubmitField("发表评论")

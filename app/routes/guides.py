@@ -1,8 +1,11 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import or_
 
-from app.forms import GUIDE_CATEGORIES, LOCATION_CATEGORIES
+from app.extensions import db
+from app.forms import GUIDE_CATEGORIES, LOCATION_CATEGORIES, GuideForm
 from app.models import CampusLocation, Guide
+from app.utils.sanitize import sanitize_html
+from app.utils.security import admin_required
 
 bp = Blueprint("guides", __name__, url_prefix="/guides")
 
@@ -18,6 +21,33 @@ def index():
         query = query.filter(or_(Guide.title.contains(keyword), Guide.summary.contains(keyword), Guide.content.contains(keyword)))
     guides = query.order_by(Guide.updated_at.desc()).all()
     return render_template("guides/index.html", guides=guides, categories=GUIDE_CATEGORIES, selected=category, keyword=keyword)
+
+
+@bp.route("/create", methods=["GET", "POST"])
+@admin_required
+def create():
+    form = GuideForm()
+    if form.validate_on_submit():
+        clean_content = sanitize_html(form.content.data.strip())
+        if len(clean_content) < 10:
+            form.content.errors.append("正文内容不足，请补充有效文字。")
+        else:
+            slug = unique_guide_slug()
+            guide = Guide(title=form.title.data.strip(), slug=slug,
+                          summary=form.summary.data.strip()[:240] or form.title.data.strip(),
+                          content=clean_content, category=form.category.data, status="published")
+            db.session.add(guide)
+            db.session.commit()
+            flash("指南已发布。", "success")
+            return redirect(url_for("guides.detail", slug=slug))
+    return render_template("guides/create.html", form=form)
+
+
+def unique_guide_slug():
+    index = Guide.query.count() + 1
+    while Guide.query.filter_by(slug=f"guide-{index}").first():
+        index += 1
+    return f"guide-{index}"
 
 
 @bp.route("/<slug>")

@@ -147,3 +147,30 @@ def test_request_logs_exclude_credentials_and_query_values(client, app):
     assert "private@example.com" not in logs
     assert "leak@example.com" not in logs
     assert "DoNotLogThisPassword!" not in logs
+
+
+def test_guest_comment_section_shows_login_button(client):
+    response = client.get("/posts/1")
+    assert response.status_code == 200
+    text = response.get_data(as_text=True)
+    assert "请先" in text
+    assert ">登录</a>" in text
+    assert "后发表评论" in text
+    assert "/auth/login" in text
+
+
+def test_verified_user_sees_comment_form(client, login):
+    login("verified@example.com")
+    response = client.get("/posts/1")
+    assert response.status_code == 200
+    assert "发表评论" in response.get_data(as_text=True)
+
+def test_modern_interaction_assets_are_served(client):
+    html = client.get("/").get_data(as_text=True)
+    assert "js/app.js" in html
+    js = client.get("/static/js/app.js")
+    assert js.status_code == 200
+    assert "to-top" in js.get_data(as_text=True)
+    css = client.get("/static/css/site.css")
+    assert "to-top" in css.get_data(as_text=True)
+    assert "prefers-reduced-motion" in css.get_data(as_text=True)

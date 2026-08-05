@@ -1,10 +1,10 @@
-{% extends 'base.html' %}{% block title %}发布信息{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">信息广场</span><h1>发布一条校园信息</h1><p>{% if current_user.is_admin %}管理员发布的内容将直接公开。{% else %}提交后先进入待审核状态。{% endif %}请勿公开他人联系方式或照片。</p><form method="post" class="form-card" id="post-form">{{ form.hidden_tag() }}<div class="field">{{ form.title.label }}{{ form.title(class='input') }}{% for e in form.title.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div><div class="field">{{ form.category.label }}{{ form.category(class='input') }}{% for e in form.category.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div><div class="field">{{ form.content.label }}{{ form.content(class='input', rows=14) }}{% for e in form.content.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div><label class="check-row">{{ form.is_anonymous() }} <span>{{ form.is_anonymous.label.text }}</span></label>{{ form.submit(class='btn primary') }}</form></section>
+{% extends 'base.html' %}{% block title %}发布新生指南{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">新生指南</span><h1>发布一篇新生指南</h1><p>指南发布后将直接公开，内容仅供校园生活参考。</p><form method="post" class="form-card" id="guide-form">{{ form.hidden_tag() }}<div class="field">{{ form.title.label }}{{ form.title(class='input') }}{% for e in form.title.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div><div class="field">{{ form.category.label }}{{ form.category(class='input') }}{% for e in form.category.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div><div class="field">{{ form.summary.label }}{{ form.summary(class='input', maxlength=240, placeholder='一句话概括指南内容') }}{% for e in form.summary.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div><div class="field">{{ form.content.label }}{{ form.content(class='input', rows=16) }}{% for e in form.content.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>{{ form.submit(class='btn primary') }}</form></section>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <script src="{{ url_for('static', filename='vendor/tinymce/tinymce.min.js', v='1.3.0') }}"></script>
 <script>
 tinymce.init({
   selector: '#content',
-  height: 420,
+  height: 460,
   language: 'zh_CN',
   language_url: '{{ url_for('static', filename='vendor/tinymce/langs/zh_CN.js', v='1.3.0') }}',
   menubar: false,

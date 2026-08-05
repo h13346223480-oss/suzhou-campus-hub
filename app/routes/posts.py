@@ -78,12 +78,16 @@ def create():
         if len(clean_content) < 10:
             form.content.errors.append("正文内容不足，请补充有效文字。")
         else:
+            is_admin = current_user.is_admin
             post = Post(author_id=current_user.id, title=form.title.data.strip(), category=form.category.data,
-                        content=clean_content, is_anonymous=form.is_anonymous.data, status="pending")
+                        content=clean_content, is_anonymous=form.is_anonymous.data,
+                        status="approved" if is_admin else "pending")
             db.session.add(post)
             db.session.commit()
-            flash("信息已提交，将在管理员审核后公开。", "success")
+            flash("信息已发布，将直接公开。" if is_admin else "信息已提交，将在管理员审核后公开。", "success")
             return redirect(url_for("main.profile"))
+    if current_user.is_admin:
+        form.submit.label.text = "直接发布"
     return render_template("posts/create.html", form=form)
 
 
