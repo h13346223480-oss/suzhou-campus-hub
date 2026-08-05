@@ -4,6 +4,7 @@ from flask_login import current_user, login_user, logout_user
 from app.extensions import db
 from app.forms import LoginForm, RegisterForm
 from app.models import InviteCode, InviteRedemption, User, utcnow
+from app.utils.uploads import save_id_photo
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -14,25 +15,35 @@ def register():
         return redirect(url_for("main.home"))
     form = RegisterForm()
     if form.validate_on_submit():
-        invite = InviteCode.query.filter_by(code=form.invite_code.data.strip()).with_for_update().first()
-        if not invite or not invite.usable:
-            form.invite_code.errors.append("邀请码无效、已用完或已过期。")
-        else:
+        invite = None
+        code = (form.invite_code.data or "").strip()
+        if code:
+            invite = InviteCode.query.filter_by(code=code).with_for_update().first()
+        photo_path = None
+        if form.student_id_photo.data:
+            try:
+                photo_path = save_id_photo(form.student_id_photo.data)
+            except ValueError as exc:
+                form.student_id_photo.errors.append(str(exc))
+        if not form.student_id_photo.errors:
+            verified = invite is not None
             user = User(
                 email=form.email.data.lower().strip(),
                 nickname=form.nickname.data.strip(),
                 enrollment_year=form.enrollment_year.data,
-                verification_status="verified",
-                joined_via_invite=True,
+                verification_status="verified" if verified else "pending",
+                joined_via_invite=verified,
+                student_id_photo=photo_path,
             )
             user.set_major(form.major.data)
             user.set_password(form.password.data)
-            invite.used_count += 1
             db.session.add(user)
-            db.session.flush()
-            db.session.add(InviteRedemption(invite_code_id=invite.id, user_id=user.id))
+            if invite:
+                invite.used_count += 1
+                db.session.flush()
+                db.session.add(InviteRedemption(invite_code_id=invite.id, user_id=user.id))
             db.session.commit()
-            flash("注册成功，你现在可以使用校园社区功能。", "success")
+            flash("注册成功，你现在可以使用校园社区功能。" if verified else "注册成功，请等待管理员审核，审核通过后即可使用完整功能。", "success")
             return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
 

@@ -1,3 +1,5 @@
+from conftest import photo_upload
+
 from app.extensions import db
 from app.models import InviteRedemption, Post, Report, User
 
@@ -5,8 +7,9 @@ from app.models import InviteRedemption, Post, Report, User
 def test_register_and_login(client, app):
     response = client.post("/auth/register", data={
         "email": "new@example.com", "nickname": "新同学", "major": "new_energy_science_engineering", "enrollment_year": 2026,
-        "invite_code": "TEST2026", "password": "StrongPass123!", "confirm_password": "StrongPass123!", "accept_terms": "y",
-    }, follow_redirects=True)
+        "invite_code": "TEST2026", "student_id_photo": photo_upload(),
+        "password": "StrongPass123!", "confirm_password": "StrongPass123!", "accept_terms": "y",
+    }, content_type="multipart/form-data", follow_redirects=True)
     assert "注册成功，你现在可以使用校园社区功能。" in response.text
     with app.app_context():
         user = User.query.filter_by(email="new@example.com").one()

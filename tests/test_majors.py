@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from conftest import photo_upload
+
 from app.extensions import db
 from app.majors import (
     INTELLIGENT_MANUFACTURING_ENGINEERING,
@@ -53,10 +55,11 @@ def test_registration_persists_authoritative_major_code(client, app):
         "major": INTELLIGENT_MANUFACTURING_ENGINEERING,
         "enrollment_year": 2026,
         "invite_code": "TEST2026",
+        "student_id_photo": photo_upload(),
         "password": "Password123!",
         "confirm_password": "Password123!",
         "accept_terms": "y",
-    }, follow_redirects=True)
+    }, content_type="multipart/form-data", follow_redirects=True)
     assert "注册成功" in response.text
     with app.app_context():
         user = User.query.filter_by(email="major-code@example.com").one()

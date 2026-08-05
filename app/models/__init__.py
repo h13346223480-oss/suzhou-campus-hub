@@ -29,6 +29,7 @@ class User(UserMixin, db.Model):
     enrollment_year = db.Column(db.Integer, nullable=False)
     role = db.Column(db.String(20), nullable=False, default="student")
     verification_status = db.Column(db.String(20), nullable=False, default="pending")
+    student_id_photo = db.Column(db.String(255), nullable=True)
     joined_via_invite = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     last_login_at = db.Column(db.DateTime(timezone=True))
@@ -177,6 +178,7 @@ class EnglishResource(db.Model):
     major_code = db.Column(db.String(50), nullable=False, default=GENERAL, index=True)
     difficulty = db.Column(db.String(20), nullable=False)
     status = db.Column(db.String(20), nullable=False, default="published")
+    author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True, index=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
     def set_major(self, code):
@@ -231,6 +233,12 @@ class Bookmark(db.Model):
 
     user = db.relationship("User")
     post = db.relationship("Post", back_populates="bookmarks")
+
+
+class SiteStat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    total_visits = db.Column(db.Integer, nullable=False, default=0)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 
 
 class Survey(db.Model):

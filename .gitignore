@@ -12,3 +12,6 @@ work/
 outputs/
 app/static/uploads/*
 !app/static/uploads/.gitkeep
+img/
+!app/static/img/
+instance/id_photos/

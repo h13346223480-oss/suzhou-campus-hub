@@ -1,12 +1,14 @@
 from datetime import datetime
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileField, FileSize
 from wtforms import BooleanField, DateTimeLocalField, IntegerField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional, ValidationError
 
-from app.models import User
+from app.models import InviteCode, User
 from app.majors import RESOURCE_MAJOR_CHOICES, STUDENT_MAJOR_CHOICES
 from app.utils.security import contains_html
+from app.utils.uploads import ALLOWED_EXTENSIONS
 
 POST_CATEGORIES = ["校园求助", "二手交易", "失物招领", "拼车", "学习搭子", "校园趣事", "兼职信息", "家教相关"]
 GUIDE_CATEGORIES = ["报到指南", "宿舍生活", "食堂交通", "周边生活", "设备建议", "常见问题"]
@@ -24,7 +26,12 @@ class RegisterForm(FlaskForm):
     nickname = StringField("昵称", validators=[DataRequired(), Length(min=2, max=40), no_html])
     major = SelectField("专业", choices=STUDENT_MAJOR_CHOICES)
     enrollment_year = IntegerField("入学年份", validators=[DataRequired(), NumberRange(min=2020, max=2100)])
-    invite_code = StringField("邀请码", validators=[DataRequired(), Length(max=64)])
+    student_id_photo = FileField("校园卡人像面照片", validators=[
+        DataRequired(message="请上传校园卡人像面照片。"),
+        FileAllowed(ALLOWED_EXTENSIONS, "仅支持 jpg、jpeg、png 或 webp 图片"),
+        FileSize(max_size=5 * 1024 * 1024, message="照片大小不能超过 5MB。"),
+    ])
+    invite_code = StringField("邀请码（选填）", validators=[Optional(), Length(max=64)])
     password = PasswordField("密码", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("确认密码", validators=[DataRequired(), EqualTo("password", message="两次密码输入不一致")])
     accept_terms = BooleanField("我已阅读并同意用户协议与社区规范", validators=[DataRequired()])
@@ -37,6 +44,20 @@ class RegisterForm(FlaskForm):
     def validate_enrollment_year(self, field):
         if field.data > datetime.now().year + 1:
             raise ValidationError("入学年份不正确。")
+
+    def validate_invite_code(self, field):
+        code = (field.data or "").strip()
+        if not code:
+            return
+        invite = InviteCode.query.filter_by(code=code).first()
+        if not invite or not invite.usable:
+            raise ValidationError("邀请码无效、已用完或已过期。")
+
+
+class ResetPasswordForm(FlaskForm):
+    new_password = PasswordField("新密码", validators=[DataRequired(), Length(min=8, max=128)])
+    confirm_password = PasswordField("确认新密码", validators=[DataRequired(), EqualTo("new_password", message="两次密码输入不一致")])
+    submit = SubmitField("重置密码")
 
 
 class LoginForm(FlaskForm):

@@ -32,6 +32,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_UPLOAD_MB", "5")) * 1024 * 1024
     UPLOAD_FOLDER = Path(os.getenv("UPLOAD_FOLDER", BASE_DIR / "app" / "static" / "uploads"))
+    ID_PHOTO_FOLDER = Path(os.getenv("ID_PHOTO_FOLDER", BASE_DIR / "instance" / "id_photos"))
     WTF_CSRF_TIME_LIMIT = None
     APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
     FEATURE_SURVEYS_PUBLIC = env_bool("FEATURE_SURVEYS_PUBLIC", True)
