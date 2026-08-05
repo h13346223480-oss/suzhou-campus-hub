@@ -1,5 +1,6 @@
-from flask import Blueprint, current_app, flash, redirect, render_template, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import or_
 
 from app.extensions import db
 from app.forms import MajorForm, PasswordForm
@@ -23,6 +24,28 @@ def home():
                               if availability(item) == "open"), None)
     return render_template("main/home.html", latest_posts=latest_posts, latest_guides=latest_guides,
                            active_survey=active_survey)
+
+
+@bp.route("/search")
+def search():
+    keyword = request.args.get("q", "").strip()
+    posts, guides, resources = [], [], []
+    if keyword:
+        post_query = Post.query.filter_by(status="approved")
+        if not current_app.config["FEATURE_TUTORING_PUBLIC"]:
+            post_query = post_query.filter(Post.category != "家教相关")
+        posts = (post_query
+                 .filter(or_(Post.title.contains(keyword), Post.content.contains(keyword)))
+                 .order_by(Post.created_at.desc()).limit(8).all())
+        guides = (Guide.query.filter_by(status="published")
+                  .filter(or_(Guide.title.contains(keyword), Guide.summary.contains(keyword),
+                              Guide.content.contains(keyword)))
+                  .order_by(Guide.updated_at.desc()).limit(6).all())
+        resources = (EnglishResource.query.filter_by(status="published")
+                     .filter(or_(EnglishResource.title.contains(keyword),
+                                 EnglishResource.content.contains(keyword)))
+                     .order_by(EnglishResource.created_at.desc()).limit(6).all())
+    return render_template("main/search.html", keyword=keyword, posts=posts, guides=guides, resources=resources)
 
 
 @bp.route("/about")

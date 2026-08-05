@@ -77,3 +77,32 @@
   };
   document.addEventListener('DOMContentLoaded', applyThemeIcon);
 })();
+
+  // 首页六卡片：从整齐位置丝滑滑动到错开位置
+  document.addEventListener('DOMContentLoaded', function () {
+    var cards = document.querySelectorAll('.hero-side .nav-card');
+    if (!cards.length) { return; }
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        cards.forEach(function (c) { c.classList.add('placed'); });
+      });
+    });
+  });
+
+  // 移动端覆盖式搜索浮层
+  var searchOverlay = document.getElementById('searchOverlay');
+  window.openSearch = function () {
+    if (!searchOverlay) { return; }
+    searchOverlay.classList.add('open');
+    searchOverlay.setAttribute('aria-hidden', 'false');
+    var input = searchOverlay.querySelector('input');
+    if (input) { input.focus(); }
+  };
+  window.closeSearch = function () {
+    if (!searchOverlay) { return; }
+    searchOverlay.classList.remove('open');
+    searchOverlay.setAttribute('aria-hidden', 'true');
+  };
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeSearch(); }
+  });

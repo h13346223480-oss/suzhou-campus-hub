@@ -289,3 +289,159 @@ main{padding-top:96px}
 /* 移动端：取消错位，英文继续收窄 */
 @media(max-width:900px){.hero-side .nav-card,.hero-side+.hero-side .nav-card{margin-top:0!important}}
 @media(max-width:590px){.hero-en{letter-spacing:.06em;font-size:11px}}
+
+/* ===== v2.7.1 双向散开：transform 错落，不再重叠 ===== */
+/* 清除旧的 margin 上下错位，避免重叠与间距不均 */
+.hero-side .nav-card,.hero-side+.hero-side .nav-card{margin-top:0!important}
+/* 各卡片基础偏移（左右+上下）与浮动幅度、旋转 */
+.nav-card.f1{--bx:0px;--by:26px;--dx:13px;--dy:-15px;--rot:-1.6deg}
+.nav-card.f2{--bx:-16px;--by:-8px;--dx:-12px;--dy:-12px;--rot:1.3deg}
+.nav-card.f3{--bx:8px;--by:36px;--dx:15px;--dy:-18px;--rot:-2deg}
+.nav-card.f4{--bx:0px;--by:44px;--dx:-14px;--dy:-14px;--rot:1.4deg}
+.nav-card.f5{--bx:18px;--by:-16px;--dx:10px;--dy:-10px;--rot:1.8deg}
+.nav-card.f6{--bx:-10px;--by:30px;--dx:-13px;--dy:-16px;--rot:-1.4deg}
+/* 关键帧读取变量：围绕基础位置左右上下浮动 */
+@keyframes card-drift-a{0%,100%{transform:translate(var(--bx),var(--by)) rotate(0deg)}50%{transform:translate(calc(var(--bx) + var(--dx)),calc(var(--by) + var(--dy))) rotate(var(--rot))}}
+@keyframes card-drift-b{0%,100%{transform:translate(var(--bx),var(--by)) rotate(0deg)}50%{transform:translate(calc(var(--bx) + var(--dx)),calc(var(--by) + var(--dy))) rotate(var(--rot))}}
+@keyframes card-drift-c{0%,100%{transform:translate(var(--bx),var(--by)) rotate(0deg)}50%{transform:translate(calc(var(--bx) + var(--dx)),calc(var(--by) + var(--dy))) rotate(var(--rot))}}
+@keyframes card-drift-d{0%,100%{transform:translate(var(--bx),var(--by)) rotate(0deg)}40%{transform:translate(calc(var(--bx) + var(--dx)),calc(var(--by) + var(--dy))) rotate(var(--rot))}70%{transform:translate(calc(var(--bx) + var(--dx)*.4),calc(var(--by) + var(--dy)*.4)) rotate(calc(var(--rot)*.4))}}
+/* 移动端：取消水平错位与基础偏移，仅保留轻微上浮 */
+@media(max-width:900px){.nav-card.f1,.nav-card.f2,.nav-card.f3,.nav-card.f4,.nav-card.f5,.nav-card.f6{--bx:0px;--by:0px;--dx:0px;--dy:-8px;--rot:0deg}}
+
+/* ===== v2.7.2 卡片不重叠/丝滑错位 + 全局搜索 ===== */
+/* 相邻卡片垂直差控制在安全范围（<=gap-浮动余量），dy 统一避免相对位移导致重叠 */
+.hero-side{gap:20px}
+.nav-card.f1{--bx:-22px;--by:10px;--dx:8px;--dy:-8px;--rot:-1.2deg}
+.nav-card.f2{--bx:-32px;--by:-4px;--dx:-7px;--dy:-8px;--rot:.9deg}
+.nav-card.f3{--bx:-16px;--by:10px;--dx:9px;--dy:-8px;--rot:-1.6deg}
+.nav-card.f4{--bx:22px;--by:12px;--dx:-8px;--dy:-8px;--rot:1.2deg}
+.nav-card.f5{--bx:32px;--by:-2px;--dx:7px;--dy:-8px;--rot:1.6deg}
+.nav-card.f6{--bx:16px;--by:12px;--dx:-9px;--dy:-8px;--rot:-.9deg}
+/* 初始整齐，JS 加 .placed 后丝滑滑动到错开位置 */
+.hero-side .nav-card{transform:translate(0,0) rotate(0)}
+.hero-side .nav-card.placed{transition:transform 1.5s cubic-bezier(.22,.61,.36,1);transform:translate(var(--bx),var(--by))}
+/* 漂移动画延后启动，与错位过渡无缝衔接 */
+.nav-card.f1{animation:card-drift-a 6.8s ease-in-out 1.7s infinite}
+.nav-card.f2{animation:card-drift-b 5.6s ease-in-out 1.8s infinite}
+.nav-card.f3{animation:card-drift-c 7.4s ease-in-out 1.9s infinite}
+.nav-card.f4{animation:card-drift-a 6s ease-in-out 1.7s infinite}
+.nav-card.f5{animation:card-drift-d 7s ease-in-out 2s infinite}
+.nav-card.f6{animation:card-drift-b 6.3s ease-in-out 1.8s infinite}
+/* 移动端：不水平错位，仅轻微上浮 */
+@media(max-width:900px){.nav-card.f1,.nav-card.f2,.nav-card.f3,.nav-card.f4,.nav-card.f5,.nav-card.f6{--bx:0px;--by:0px;--dx:0px;--dy:-6px;--rot:0deg}}
+/* ===== 顶部胶囊全局搜索 ===== */
+.nav-search{display:flex;align-items:center;gap:7px;width:180px;height:34px;padding:0 6px 0 12px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);transition:border-color .2s ease,width .25s ease,background-color .2s ease}
+.nav-search svg{width:15px;height:15px;color:var(--muted);flex-shrink:0}
+.nav-search input{border:0;background:none;outline:none;color:var(--ink);font-size:13px;width:100%;min-width:0}
+.nav-search input::placeholder{color:var(--muted)}
+.nav-search:focus-within{border-color:var(--purple);background:rgba(255,255,255,.12)}
+@media(max-width:1100px){.nav-search{width:140px}}
+@media(max-width:900px){.nav-search{width:100%;height:38px}}
+[data-theme="light"] .nav-search{background:#fff;border-color:var(--line)}
+[data-theme="light"] .nav-search:focus-within{border-color:var(--blue)}
+[data-theme="light"] .nav-search input{color:var(--ink)}
+/* ===== 搜索结果页 ===== */
+.search-page-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.search-page-ico{width:18px;height:18px;color:var(--muted);flex-shrink:0}
+.search-page-bar .input{flex:1}
+.search-summary{color:var(--muted);margin-bottom:22px}
+.search-block{margin-bottom:30px}
+.search-block h2{font-size:19px;margin:0 0 12px;color:var(--ink);border-left:4px solid var(--blue);padding-left:10px}
+.search-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.05);margin-bottom:10px;color:var(--ink);transition:border-color .2s ease,transform .2s ease,background-color .2s ease}
+.search-item:hover{border-color:rgba(155,109,255,.55);transform:translateY(-2px)}
+.search-item .tag{flex-shrink:0;margin-top:2px}
+.search-item div{flex:1;min-width:0}
+.search-item strong{display:block;font-size:15px}
+.search-item p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.search-item small{color:var(--muted);white-space:nowrap;flex-shrink:0}
+[data-theme="light"] .search-item{background:#fff;border-color:var(--line)}
+
+/* ===== v2.7.3 顶部毛玻璃更透明 ===== */
+.site-header{background:rgba(10,16,26,.5);border-color:rgba(255,255,255,.14)}
+.site-header.scrolled{background:rgba(8,13,22,.62)}
+[data-theme="light"] .site-header{background:rgba(255,255,255,.72)}
+[data-theme="light"] .site-header.scrolled{background:rgba(255,255,255,.8)}
+
+/* ===== v2.7.4 搜索交互优化 ===== */
+/* 桌面搜索框：聚焦平滑展开 + 高亮 */
+.nav-search{width:180px}
+.nav-search:focus-within{width:240px;border-color:var(--purple);background:rgba(255,255,255,.14);box-shadow:0 0 0 4px rgba(155,109,255,.14)}
+[data-theme="light"] .nav-search:focus-within{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,109,174,.12);background:#fff}
+/* 移动端：隐藏导航内搜索框，改用独立按钮 + 浮层 */
+@media(max-width:900px){.nav-search{display:none}}
+.nav-search-btn{display:none;width:38px;height:38px;place-items:center;border-radius:12px;border:1px solid var(--line);background:rgba(17,25,38,.72);color:#fff;transition:border-color .2s ease,transform .2s ease}
+.nav-search-btn svg{width:18px;height:18px}
+.nav-search-btn:hover{border-color:var(--purple);transform:translateY(-1px)}
+[data-theme="light"] .nav-search-btn{background:#fff;color:var(--ink)}
+@media(max-width:900px){.nav-search-btn{display:grid}}
+/* 覆盖式搜索浮层 */
+.search-overlay{position:fixed;inset:0;z-index:60;background:rgba(4,8,14,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:flex-start;padding:118px 20px 0;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.search-overlay.open{opacity:1;pointer-events:auto}
+.search-overlay-bar{display:flex;align-items:center;gap:12px;width:min(620px,100%);padding:6px 8px 6px 18px;border-radius:18px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.search-overlay-bar svg{width:20px;height:20px;color:var(--muted);flex-shrink:0}
+.search-overlay-bar input{border:0;background:none;outline:none;color:var(--ink);font-size:17px;width:100%;min-width:0}
+.search-overlay-bar input::placeholder{color:var(--muted)}
+.search-overlay-close{display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:12px;background:rgba(255,255,255,.08);color:var(--muted);cursor:pointer}
+.search-overlay-close svg{width:18px;height:18px}
+.search-overlay-close:hover{color:var(--purple);background:rgba(255,255,255,.14)}
+[data-theme="light"] .search-overlay{background:rgba(10,16,26,.25)}
+[data-theme="light"] .search-overlay-bar{background:#fff;border-color:#d8e2ea}
+[data-theme="light"] .search-overlay-close{background:#f0f4f7;color:var(--muted)}
+
+/* ===== v2.7.5 六卡片左右上下更散开 ===== */
+.hero-side{gap:34px}
+.nav-card.f1{--bx:-40px;--by:14px;--dx:9px;--dy:-8px;--rot:-1.2deg}
+.nav-card.f2{--bx:-55px;--by:-12px;--dx:-8px;--dy:-8px;--rot:.9deg}
+.nav-card.f3{--bx:-30px;--by:14px;--dx:10px;--dy:-8px;--rot:-1.6deg}
+.nav-card.f4{--bx:40px;--by:16px;--dx:-9px;--dy:-8px;--rot:1.2deg}
+.nav-card.f5{--bx:55px;--by:-10px;--dx:8px;--dy:-8px;--rot:1.6deg}
+.nav-card.f6{--bx:30px;--by:16px;--dx:-10px;--dy:-8px;--rot:-.9deg}
+@media(max-width:900px){.hero-side{gap:12px}}
+
+/* ===== v2.8.0 六卡片大胆散开（上中下分列 + 左右外扩） ===== */
+/* hero 容器放宽，卡片可更靠边 */
+.hero-full .container{width:min(1280px,calc(100% - 24px))}
+.hero-layout{align-items:stretch}
+.hero-center{align-self:center}
+/* 左右两列：flex 纵向铺满，三张卡片分别落在上/中/下 */
+.hero-side{display:flex;flex-direction:column;justify-content:space-between;gap:20px;height:calc(100vh - 230px);min-height:430px}
+/* 每张卡片：大幅水平外扩 + 垂直微调，动画围绕基础位置浮动 */
+.nav-card.f1{--bx:-45px;--by:6px;--dx:10px;--dy:-10px;--rot:-1.2deg}
+.nav-card.f2{--bx:-60px;--by:-14px;--dx:-9px;--dy:-8px;--rot:.9deg}
+.nav-card.f3{--bx:-35px;--by:-6px;--dx:11px;--dy:-12px;--rot:-1.6deg}
+.nav-card.f4{--bx:45px;--by:10px;--dx:-10px;--dy:-10px;--rot:1.2deg}
+.nav-card.f5{--bx:60px;--by:-18px;--dx:9px;--dy:-9px;--rot:1.6deg}
+.nav-card.f6{--bx:35px;--by:-4px;--dx:-11px;--dy:-11px;--rot:-.9deg}
+/* 中屏：水平外扩减半，避免贴出视口 */
+@media(max-width:1200px){
+  .nav-card.f1{--bx:-26px}.nav-card.f2{--bx:-34px}.nav-card.f3{--bx:-20px}
+  .nav-card.f4{--bx:26px}.nav-card.f5{--bx:34px}.nav-card.f6{--bx:20px}
+}
+/* 移动端：恢复横向三列紧凑布局 */
+@media(max-width:900px){
+  .hero-layout{align-items:center}
+  .hero-full .container{width:min(1120px,calc(100% - 32px))}
+  .hero-side{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;height:auto;min-height:0}
+  .hero-center{align-self:auto}
+  .nav-card.f1,.nav-card.f2,.nav-card.f3,.nav-card.f4,.nav-card.f5,.nav-card.f6{--bx:0px;--by:0px;--dx:0px;--dy:-6px;--rot:0deg}
+}
+
+/* ===== v2.8.1 左右错落不对称（打破镜像对齐） ===== */
+/* 左列第一张偏下 / 右列第一张偏上，中下部同样错开 */
+.nav-card.f1{--bx:-50px;--by:44px;--dx:10px;--dy:-10px;--rot:-1.2deg}
+.nav-card.f2{--bx:-66px;--by:-18px;--dx:-9px;--dy:-8px;--rot:.9deg}
+.nav-card.f3{--bx:-40px;--by:8px;--dx:11px;--dy:-12px;--rot:-1.6deg}
+.nav-card.f4{--bx:50px;--by:-34px;--dx:-10px;--dy:-10px;--rot:1.2deg}
+.nav-card.f5{--bx:66px;--by:30px;--dx:9px;--dy:-9px;--rot:1.6deg}
+.nav-card.f6{--bx:40px;--by:-26px;--dx:-11px;--dy:-11px;--rot:-.9deg}
+@media(max-width:1200px){
+  .nav-card.f1{--bx:-28px}.nav-card.f2{--bx:-36px}.nav-card.f3{--bx:-22px}
+  .nav-card.f4{--bx:28px}.nav-card.f5{--bx:36px}.nav-card.f6{--bx:22px}
+}
+@media(max-width:900px){
+  .nav-card.f1,.nav-card.f2,.nav-card.f3,.nav-card.f4,.nav-card.f5,.nav-card.f6{--bx:0px;--by:0px;--dx:0px;--dy:-6px;--rot:0deg}
+}
+
+/* ===== v2.8.1 左列整体略高于右列 ===== */
+.hero-layout > .hero-side:first-child{transform:translateY(-48px)}
+@media(max-width:900px){.hero-layout > .hero-side:first-child{transform:none}}

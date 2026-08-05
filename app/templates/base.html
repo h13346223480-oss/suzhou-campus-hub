@@ -6,15 +6,15 @@
   <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
   <script>try{var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
   <title>{% block title %}东蒙Hub{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.7.0') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.8.1') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.1.0') }}">
 </head>
 <body>
   <header class="site-header">
     <nav class="nav container" aria-label="主导航">
-      <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">待</span><span>待设计<small>学生自发 · 非官方</small></span></a>
+      <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">待</span><span>待设计<small>学生自发 · 非官方</small></span></a><button class="nav-search-btn" type="button" aria-label="搜索" onclick="openSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
       <button class="nav-toggle" type="button" aria-label="展开导航" aria-expanded="false" onclick="const n=document.getElementById('navlinks');n.classList.toggle('open');this.setAttribute('aria-expanded',n.classList.contains('open'))">菜单</button>
-      <div class="nav-links" id="navlinks">
+      <div class="nav-links" id="navlinks"><form class="nav-search" action="{{ url_for('main.search') }}" method="get" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input name="q" type="search" placeholder="搜索全站" aria-label="全局搜索" autocomplete="off"></form>
         <a href="{{ url_for('posts.index') }}">信息广场</a>
         <a href="{{ url_for('guides.index') }}">新生指南</a>
         <a href="{{ url_for('guides.campus_map') }}">校园地图</a>
@@ -31,6 +31,13 @@
       </div>
     </nav>
   </header>
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
+    <form class="search-overlay-bar" action="{{ url_for('main.search') }}" method="get" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input name="q" type="search" placeholder="搜索帖子、指南、学习资源" aria-label="全局搜索" autocomplete="off">
+      <button type="button" class="search-overlay-close" onclick="closeSearch()" aria-label="关闭搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </form>
+  </div>
   <main>
     <div class="container flash-stack" aria-live="polite">
       {% for category, message in get_flashed_messages(with_categories=true) %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
@@ -46,6 +53,6 @@
     </div>
     <div class="container disclaimer">本平台由学生自发建设，与学校官方无隶属或授权关系。平台信息仅供参考，请以学校官方通知为准。<span class="visit-count">累计访问 {{ site_total_visits }} 人</span></div>
   </footer>
-<script src="{{ url_for('static', filename='js/app.js', v='1.8.0') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js', v='1.10.0') }}"></script>
 </body>
 </html>
