@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% from '_form.html' import render_form %}{% block title %}注册{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">加入社区</span><h1>创建学生账号</h1><p>使用有效邀请码注册后即可使用校园社区功能。我们不要求上传学生证照片。</p>{{ render_form(form) }}<p class="form-note">已有账号？<a href="{{ url_for('auth.login') }}">登录</a></p></section>{% endblock %}

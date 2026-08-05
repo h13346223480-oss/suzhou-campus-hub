@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block title %}文件过大{% endblock %}{% block content %}<section class="error-page container narrow"><strong>413</strong><h1>上传文件过大</h1><p>单个文件不能超过 {{ config.MAX_CONTENT_LENGTH // 1024 // 1024 }}MB，请压缩后重新上传。</p><a class="btn primary" href="{{ url_for('main.home') }}">返回首页</a></section>{% endblock %}

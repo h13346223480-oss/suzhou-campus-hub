@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}邀请码管理{% endblock %}
+{% block content %}
+<section class="page-header"><div class="container"><span class="eyebrow">管理后台</span><h1>邀请码管理</h1><p>邀请码必须设置使用上限和失效时间，不提供永久或无限使用的邀请码。</p></div></section>
+<section class="section container">
+  {% include 'admin/_nav.html' %}
+  <form class="form-card" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2>创建邀请码</h2>
+    <div class="form-grid">
+      <div class="field"><label for="max_uses">最大使用次数</label><input class="input" id="max_uses" name="max_uses" type="number" min="1" max="1000" value="20" required></div>
+      <div class="field"><label for="expires_at">失效时间（北京时间）</label><input class="input" id="expires_at" name="expires_at" type="datetime-local" value="{{ default_expiry.strftime('%Y-%m-%dT%H:%M') }}" required></div>
+    </div>
+    <button class="btn primary" type="submit">生成并启用</button>
+  </form>
+  <div class="table-wrap"><table><thead><tr><th>邀请码</th><th>状态</th><th>已使用 / 上限</th><th>失效时间</th><th>操作</th></tr></thead><tbody>
+    {% for invite in invites %}<tr><td><code>{{ invite.code }}</code></td><td><span class="tag">{{ '启用' if invite.is_active else '停用' }}</span></td><td>{{ invite.used_count }} / {{ invite.max_uses }}{% if invite.redemptions.count() %}<details><summary>查看使用记录</summary>{% for item in invite.redemptions.order_by(invite_redemption_model.redeemed_at.desc()).all() %}<small>{{ item.user.nickname }} · {{ item.redeemed_at.strftime('%Y-%m-%d %H:%M') }}</small><br>{% endfor %}</details>{% elif invite.used_count %}<small>早期记录仅保留累计次数</small>{% endif %}</td><td>{{ display_expiry(invite.expires_at) }}</td><td><div class="button-row"><form method="post" action="{{ url_for('admin.toggle_invite', invite_id=invite.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary" type="submit">{{ '停用' if invite.is_active else '启用' }}</button></form>{% if not invite.used_count %}<form method="post" action="{{ url_for('admin.delete_invite', invite_id=invite.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small danger" type="submit">删除</button></form>{% endif %}</div></td></tr>
+    {% else %}<tr><td colspan="5">当前还没有邀请码。</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

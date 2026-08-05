@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+<section class="section container">
+  <h1>用户管理</h1>
+  {% include 'admin/_nav.html' %}
+  <form class="filter-bar" method="get"><select class="input" name="major"><option value="">全部专业</option>{% for code,label in student_major_choices %}<option value="{{ code }}" {% if selected_major==code %}selected{% endif %}>{{ label }}</option>{% endfor %}<option value="{{ pending_major_code }}" {% if selected_major==pending_major_code %}selected{% endif %}>待确认</option></select><button class="btn primary" type="submit">筛选</button></form>
+  <div class="table-wrap"><table>
+    <thead><tr><th>昵称</th><th>邮箱</th><th>专业/年级</th><th>状态</th><th>操作</th></tr></thead>
+    <tbody>{% for user in users %}<tr>
+      <td>{{ user.nickname }}</td><td>{{ user.email }}</td><td>{% if user.requires_major_confirmation %}<span class="status response-test">待确认</span>{% else %}{{ user.major_display }}{% endif %} / {{ user.enrollment_year }}</td>
+      <td>{% if user.is_admin %}管理员{% elif not user.is_active %}账号已停用{% else %}{{ status_label(user.verification_status) }}{% endif %}</td>
+      <td>{% if not user.is_admin %}<div class="button-row">{% if not user.is_verified %}<form method="post" action="{{ url_for('admin.verify_user', user_id=user.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small primary">恢复社区权限</button></form>{% else %}<form method="post" action="{{ url_for('admin.revoke_user', user_id=user.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary">撤销社区权限</button></form>{% endif %}<form method="post" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small danger">{{ '恢复账号' if not user.is_active else '停用账号' }}</button></form></div>{% else %}—{% endif %}</td>
+    </tr>{% else %}<tr><td colspan="5">暂无符合条件的用户。</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

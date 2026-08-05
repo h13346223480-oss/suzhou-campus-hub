@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}用户中心{% endblock %}
+{% block content %}
+<section class="page-header"><div class="container"><span class="eyebrow">用户中心</span><h1>{{ current_user.nickname }}</h1><p>{% if current_user.is_admin %}平台维护账号{% else %}{{ current_user.major_display }} · {{ current_user.enrollment_year }} 级{% endif %}</p></div></section>
+<section class="section container">
+  {% if current_user.requires_major_confirmation %}<div class="callout major-confirmation"><strong>请重新确认专业</strong><p>旧记录无法判断你属于机器人工程还是智能制造工程，平台不会自动猜测。确认前，后台只会显示“待确认”，也不会将你计入具体专业统计。</p><a class="btn primary" href="{{ url_for('main.edit_major') }}">现在确认专业</a></div>{% endif %}
+  <div class="profile-grid">
+    <aside class="card profile-card">
+      <span class="status {{ current_user.verification_status }}">{% if current_user.is_admin %}管理员{% elif current_user.is_verified and current_user.joined_via_invite %}已通过邀请码加入社区{% elif current_user.is_verified %}社区权限正常{% else %}社区权限不可用{% endif %}</span>
+      <dl><dt>邮箱（仅自己可见）</dt><dd>{{ current_user.email }}</dd>{% if not current_user.is_admin %}<dt>专业</dt><dd>{{ current_user.major_display }}</dd>{% endif %}<dt>加入时间</dt><dd>{{ current_user.created_at.strftime('%Y-%m-%d') }}</dd></dl>
+      <div class="stack">{% if not current_user.is_admin %}<a class="btn secondary" href="{{ url_for('main.edit_major') }}">{% if current_user.requires_major_confirmation %}确认专业{% else %}修改专业{% endif %}</a>{% endif %}<a class="btn secondary" href="{{ url_for('main.change_password') }}">修改密码</a><a class="btn secondary" href="{{ url_for('surveys.mine') }}">我参与的调查</a>{% if current_user.is_verified %}<a class="btn primary" href="{{ url_for('posts.create') }}">发布信息</a>{% if config.FEATURE_TUTORING_PUBLIC %}<a class="btn secondary" href="{{ url_for('tutoring.tutor_profile') }}">申请成为家教老师</a>{% endif %}{% endif %}</div>
+      {% if current_user.is_verified and not config.FEATURE_TUTORING_PUBLIC %}<details class="developer-option"><summary>更多申请</summary><p>家教模块处于隐藏开发状态。</p><a href="{{ url_for('tutoring.tutor_profile') }}">申请成为家教老师</a></details>{% endif %}
+    </aside>
+    <div class="profile-main">
+      <h2>我参与的调查</h2>{% for item in survey_responses %}<a class="list-card" href="{{ url_for('surveys.mine') }}"><strong>{{ item.survey.title }}</strong><small>{{ item.submitted_at.strftime('%Y-%m-%d') }}</small><span class="status approved">已提交</span></a>{% else %}<div class="empty">还没有参与过调查。</div>{% endfor %}
+      <h2>我的帖子</h2>{% for post in posts %}<a class="list-card" href="{{ url_for('posts.detail', post_id=post.id) }}"><span class="tag">{{ status_label(post.status) }}</span><strong>{{ post.title }}</strong><small>{{ post.category }}</small></a>{% else %}<div class="empty">还没有发布过帖子。</div>{% endfor %}
+      <h2>我的收藏</h2>{% for item in bookmarks %}<a class="list-card" href="{{ url_for('posts.detail', post_id=item.post.id) }}"><strong>{{ item.post.title }}</strong><small>{{ item.post.category }}</small></a>{% else %}<div class="empty">还没有收藏内容。</div>{% endfor %}
+      {% if config.FEATURE_TUTORING_PUBLIC %}<h2>我的家教资料</h2>{% if tutor_profile %}<div class="card"><span class="tag">{{ status_label(tutor_profile.status) }}</span><h3>{{ tutor_profile.subjects }}</h3><p>{{ tutor_profile.strengths }}</p></div>{% else %}<div class="empty">尚未登记家教资料。</div>{% endif %}{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

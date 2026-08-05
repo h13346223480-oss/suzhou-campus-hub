@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% from '_form.html' import render_form %}
+{% block title %}{% if requires_confirmation %}确认专业{% else %}修改专业{% endif %}{% endblock %}
+{% block content %}<section class="form-page container narrow"><a class="back" href="{{ url_for('main.profile') }}">← 返回用户中心</a><span class="eyebrow">个人资料</span><h1>{% if requires_confirmation %}重新确认专业{% else %}修改专业{% endif %}</h1>{% if requires_confirmation %}<div class="callout"><strong>请选择真实专业</strong><p>原记录只能确定属于机器人工程或智能制造工程，平台不会自动推断。确认后将立即更新统计归属。</p></div>{% endif %}{{ render_form(form) }}</section>{% endblock %}

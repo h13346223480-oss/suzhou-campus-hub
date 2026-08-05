@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% from '_form.html' import render_form %}{% block title %}提交家教需求{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">家教需求</span><h1>告诉我们需要怎样的老师</h1><div class="callout">联系方式仅管理员为人工匹配而查看，普通用户无法访问。平台不承诺具体提分结果。</div>{{ render_form(form) }}</section>{% endblock %}
+

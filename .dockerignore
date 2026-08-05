@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+!.env.production.example
+.venv
+work
+outputs
+instance
+__pycache__
+*.py[cod]
+.pytest_cache
+.coverage
+htmlcov
+app/static/uploads/*
+!app/static/uploads/.gitkeep
