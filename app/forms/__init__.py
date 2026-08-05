@@ -49,7 +49,7 @@ class LoginForm(FlaskForm):
 class PostForm(FlaskForm):
     title = StringField("标题", validators=[DataRequired(), Length(min=4, max=120), no_html])
     category = SelectField("分类", choices=[(item, item) for item in POST_CATEGORIES])
-    content = TextAreaField("正文", validators=[DataRequired(), Length(min=10, max=5000), no_html])
+    content = TextAreaField("正文（支持富文本）", validators=[DataRequired(), Length(min=10, max=30000)])
     is_anonymous = BooleanField("在前台匿名发布")
     submit = SubmitField("提交审核")
 
@@ -148,3 +148,15 @@ class SurveyQuestionForm(FlaskForm):
     max_value = IntegerField("最大数值/评分", validators=[Optional()])
     add_other = BooleanField("添加“其他，请填写”选项")
     submit = SubmitField("保存问题")
+
+class AdminCreateUserForm(FlaskForm):
+    email = StringField("邮箱", validators=[DataRequired(), Email(), Length(max=255)])
+    nickname = StringField("昵称", validators=[DataRequired(), Length(min=2, max=40), no_html])
+    role = SelectField("角色", choices=[("student", "普通用户（学生）"), ("admin", "管理员")], default="student")
+    password = PasswordField("初始密码", validators=[DataRequired(), Length(min=8, max=128)])
+    submit = SubmitField("创建用户")
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data.lower().strip()).first():
+            raise ValidationError("该邮箱已注册。")
+

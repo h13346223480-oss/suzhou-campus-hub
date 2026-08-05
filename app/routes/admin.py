@@ -3,11 +3,12 @@ from secrets import token_hex
 from zoneinfo import ZoneInfo
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user
 from sqlalchemy import or_
 
 from app.extensions import db
-from app.forms import ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES
-from app.majors import RESOURCE_MAJOR_CODES, USER_MAJOR_CODES, normalize_resource_major
+from app.forms import AdminCreateUserForm, ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES
+from app.majors import PENDING_CONFIRMATION, RESOURCE_MAJOR_CODES, USER_MAJOR_CODES, normalize_resource_major
 from app.models import CampusLocation, Comment, EnglishResource, Guide, InviteCode, InviteRedemption, Post, Report, TutorProfile, TutorRequest, User, utcnow
 from app.utils.security import admin_required, contains_html
 from app.utils.uploads import save_image
@@ -39,6 +40,28 @@ def users():
         query = query.filter_by(major_code=major_code)
     return render_template("admin/users.html", users=query.order_by(User.created_at.desc()).all(),
                            selected_major=major_code)
+
+
+@bp.route("/users/new", methods=["GET", "POST"])
+@admin_required
+def users_new():
+    form = AdminCreateUserForm()
+    if form.validate_on_submit():
+        user = User(
+            email=form.email.data.lower().strip(),
+            nickname=form.nickname.data.strip(),
+            role=form.role.data,
+            verification_status="verified",
+            is_active=True,
+            enrollment_year=datetime.now(ZoneInfo("Asia/Shanghai")).year,
+        )
+        user.set_major(PENDING_CONFIRMATION)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("用户已创建。", "success")
+        return redirect(url_for("admin.users"))
+    return render_template("admin/users_new.html", form=form)
 
 
 @bp.route("/invites", methods=["GET", "POST"])
@@ -130,6 +153,34 @@ def toggle_user_active(user_id):
     user.is_active = not user.is_active
     db.session.commit()
     flash("用户账号状态已更新。", "success")
+    return redirect(url_for("admin.users"))
+
+
+@bp.route("/users/<int:user_id>/set-admin", methods=["POST"])
+@admin_required
+def set_admin(user_id):
+    user = db.get_or_404(User, user_id)
+    if user.id == current_user.id:
+        flash("不能对自己执行此操作。", "danger")
+    else:
+        user.role = "admin"
+        user.verification_status = "verified"
+        user.is_active = True
+        db.session.commit()
+        flash("该用户已成为管理员，可访问管理后台。", "success")
+    return redirect(url_for("admin.users"))
+
+
+@bp.route("/users/<int:user_id>/unset-admin", methods=["POST"])
+@admin_required
+def unset_admin(user_id):
+    user = db.get_or_404(User, user_id)
+    if user.id == current_user.id:
+        flash("不能移除自己的管理员权限，以免锁定管理后台。", "danger")
+    else:
+        user.role = "student"
+        db.session.commit()
+        flash("该用户的管理员权限已移除。", "success")
     return redirect(url_for("admin.users"))
 
 

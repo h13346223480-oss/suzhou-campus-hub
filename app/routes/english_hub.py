@@ -11,7 +11,6 @@ bp = Blueprint("english_hub", __name__, url_prefix="/english-hub")
 
 
 @bp.route("")
-@verified_required
 def index():
     category = request.args.get("category", "").strip()
     major = request.args.get("major", "").strip()

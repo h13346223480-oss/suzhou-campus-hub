@@ -12,20 +12,17 @@ bp = Blueprint("main", __name__)
 
 @bp.route("/")
 def home():
-    can_view_campus = current_user.is_authenticated and current_user.is_verified
-    latest_posts, latest_guides = [], []
-    if can_view_campus:
-        post_query = Post.query.filter_by(status="approved")
-        if not current_app.config["FEATURE_TUTORING_PUBLIC"]:
-            post_query = post_query.filter(Post.category != "家教相关")
-        latest_posts = post_query.order_by(Post.created_at.desc()).limit(4).all()
-        latest_guides = Guide.query.filter_by(status="published").order_by(Guide.updated_at.desc()).limit(3).all()
+    post_query = Post.query.filter_by(status="approved")
+    if not current_app.config["FEATURE_TUTORING_PUBLIC"]:
+        post_query = post_query.filter(Post.category != "家教相关")
+    latest_posts = post_query.order_by(Post.created_at.desc()).limit(4).all()
+    latest_guides = Guide.query.filter_by(status="published").order_by(Guide.updated_at.desc()).limit(3).all()
     active_survey = None
     if current_app.config["FEATURE_SURVEYS_PUBLIC"]:
         active_survey = next((item for item in Survey.query.filter_by(status="published").order_by(Survey.created_at.desc()).all()
                               if availability(item) == "open"), None)
     return render_template("main/home.html", latest_posts=latest_posts, latest_guides=latest_guides,
-                           active_survey=active_survey, can_view_campus=can_view_campus)
+                           active_survey=active_survey)
 
 
 @bp.route("/about")
