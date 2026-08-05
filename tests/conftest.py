@@ -1,4 +1,7 @@
 import pytest
+from io import BytesIO
+
+from PIL import Image
 
 from app import create_app
 from app.extensions import db
@@ -36,6 +39,13 @@ def make_user(nickname, email, major_code, role, status):
     user.set_major(major_code)
     user.set_password("Password123!")
     return user
+
+
+def photo_upload(name="card.png"):
+    buf = BytesIO()
+    Image.new("RGB", (8, 8), "navy").save(buf, format="PNG")
+    buf.seek(0)
+    return (buf, name)
 
 
 @pytest.fixture()

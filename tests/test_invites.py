@@ -1,3 +1,5 @@
+from conftest import photo_upload
+
 from datetime import datetime, timedelta, timezone
 
 from app.extensions import db
@@ -79,10 +81,11 @@ def test_generated_invite_registers_one_verified_student_with_usage_record(clien
         "major": "robotics_engineering",
         "enrollment_year": 2026,
         "invite_code": code,
+        "student_id_photo": photo_upload(),
         "password": "StrongPass123!",
         "confirm_password": "StrongPass123!",
         "accept_terms": "y",
-    }, follow_redirects=True)
+    }, content_type="multipart/form-data", follow_redirects=True)
     assert "注册成功" in response.text
     with app.app_context():
         user = User.query.filter_by(email="invite-release@example.com", verification_status="verified").one()

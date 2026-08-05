@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request, session
 from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -34,6 +34,7 @@ def create_app(config_object=None):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+    Path(app.config["ID_PHOTO_FOLDER"]).mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -43,7 +44,7 @@ def create_app(config_object=None):
     login_manager.login_message = "请先登录后再继续。"
     login_manager.login_message_category = "warning"
 
-    from .models import User
+    from .models import SiteStat, User
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -61,8 +62,32 @@ def create_app(config_object=None):
     from .majors import (RESOURCE_MAJOR_CHOICES, STUDENT_MAJOR_CHOICES, PENDING_CONFIRMATION,
                          major_label)
 
+    @app.before_request
+    def count_visits():
+        if request.endpoint is None or request.endpoint in ("static", "healthz"):
+            return
+        if session.get("_site_visited"):
+            return
+        session["_site_visited"] = True
+        try:
+            stat = db.session.get(SiteStat, 1)
+            if stat is None:
+                stat = SiteStat(id=1, total_visits=1)
+                db.session.add(stat)
+            else:
+                stat.total_visits += 1
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
     @app.context_processor
     def template_helpers():
+        try:
+            site_stat = db.session.get(SiteStat, 1)
+            site_total_visits = site_stat.total_visits if site_stat else 0
+        except Exception:
+            db.session.rollback()
+            site_total_visits = 0
         return {
             "survey_rules": rules_for,
             "status_label": lambda value: STATUS_LABELS.get(value, value),
@@ -70,6 +95,7 @@ def create_app(config_object=None):
             "resource_major_choices": RESOURCE_MAJOR_CHOICES,
             "pending_major_code": PENDING_CONFIRMATION,
             "major_label": major_label,
+            "site_total_visits": site_total_visits,
         }
 
     @app.get("/healthz")

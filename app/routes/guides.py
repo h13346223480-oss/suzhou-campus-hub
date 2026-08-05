@@ -43,6 +43,39 @@ def create():
     return render_template("guides/create.html", form=form)
 
 
+@bp.route("/<slug>/edit", methods=["GET", "POST"])
+@admin_required
+def edit(slug):
+    guide = Guide.query.filter_by(slug=slug).first_or_404()
+    form = GuideForm(obj=guide)
+    if request.method == "GET":
+        form.summary.data = guide.summary
+    if form.validate_on_submit():
+        clean_content = sanitize_html(form.content.data.strip())
+        if len(clean_content) < 10:
+            form.content.errors.append("正文内容不足，请补充有效文字。")
+        else:
+            guide.title = form.title.data.strip()
+            guide.summary = form.summary.data.strip()[:240] or guide.title
+            guide.content = clean_content
+            guide.category = form.category.data
+            db.session.commit()
+            flash("指南已更新。", "success")
+            return redirect(url_for("guides.detail", slug=guide.slug))
+    form.submit.label.text = "保存修改"
+    return render_template("guides/create.html", form=form, editing=True)
+
+
+@bp.route("/<slug>/delete", methods=["POST"])
+@admin_required
+def delete(slug):
+    guide = Guide.query.filter_by(slug=slug).first_or_404()
+    guide.status = "hidden"
+    db.session.commit()
+    flash("指南已删除，前台不再展示，可在后台存档查看。", "success")
+    return redirect(url_for("guides.index"))
+
+
 def unique_guide_slug():
     index = Guide.query.count() + 1
     while Guide.query.filter_by(slug=f"guide-{index}").first():

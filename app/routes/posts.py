@@ -149,3 +149,68 @@ def report(post_id):
     else:
         flash("请填写至少 5 个字符的举报原因。", "danger")
     return redirect(url_for("posts.detail", post_id=post.id))
+
+
+@bp.route("/<int:post_id>/edit", methods=["GET", "POST"])
+@verified_required
+def edit(post_id):
+    post = db.get_or_404(Post, post_id)
+    if not (current_user.is_admin or current_user.id == post.author_id):
+        abort(403)
+    form = PostForm(obj=post)
+    form.category.choices = [(item, item) for item in visible_categories()]
+    if form.validate_on_submit():
+        clean_content = sanitize_html(form.content.data.strip())
+        if len(clean_content) < 10:
+            form.content.errors.append("正文内容不足，请补充有效文字。")
+        else:
+            post.title = form.title.data.strip()
+            post.category = form.category.data
+            post.content = clean_content
+            post.is_anonymous = form.is_anonymous.data
+            post.status = "approved" if current_user.is_admin else "pending"
+            db.session.commit()
+            flash("帖子已更新，将直接公开。" if current_user.is_admin else "帖子已更新，正在等待管理员重新审核。", "success")
+            return redirect(url_for("posts.detail", post_id=post.id))
+    form.submit.label.text = "保存并直接公开" if current_user.is_admin else "提交修改"
+    return render_template("posts/create.html", form=form, editing=True)
+
+
+@bp.route("/<int:post_id>/delete", methods=["POST"])
+@verified_required
+def delete(post_id):
+    post = db.get_or_404(Post, post_id)
+    if not (current_user.is_admin or current_user.id == post.author_id):
+        abort(403)
+    post.status = "hidden"
+    db.session.commit()
+    flash("帖子已删除，前台不再展示，管理员可在后台存档查看。", "success")
+    return redirect(url_for("posts.index"))
+
+
+@bp.route("/comments/<int:comment_id>/edit", methods=["GET", "POST"])
+@verified_required
+def edit_comment(comment_id):
+    comment = db.get_or_404(Comment, comment_id)
+    if not (current_user.is_admin or current_user.id == comment.author_id):
+        abort(403)
+    form = CommentForm(obj=comment)
+    if form.validate_on_submit():
+        comment.content = form.content.data.strip()
+        db.session.commit()
+        flash("评论已更新。", "success")
+        return redirect(url_for("posts.detail", post_id=comment.post_id))
+    form.submit.label.text = "保存修改"
+    return render_template("posts/comment_edit.html", form=form, comment=comment)
+
+
+@bp.route("/comments/<int:comment_id>/delete", methods=["POST"])
+@verified_required
+def delete_comment(comment_id):
+    comment = db.get_or_404(Comment, comment_id)
+    if not (current_user.is_admin or current_user.id == comment.author_id):
+        abort(403)
+    comment.status = "hidden"
+    db.session.commit()
+    flash("评论已删除，前台不再展示。", "success")
+    return redirect(url_for("posts.detail", post_id=comment.post_id))

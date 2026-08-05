@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from secrets import token_hex
 from zoneinfo import ZoneInfo
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user
 from sqlalchemy import or_
 
 from app.extensions import db
-from app.forms import AdminCreateUserForm, ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES
+from app.forms import AdminCreateUserForm, ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES, ResetPasswordForm
 from app.majors import PENDING_CONFIRMATION, RESOURCE_MAJOR_CODES, USER_MAJOR_CODES, normalize_resource_major
-from app.models import CampusLocation, Comment, EnglishResource, Guide, InviteCode, InviteRedemption, Post, Report, TutorProfile, TutorRequest, User, utcnow
+from app.models import CampusLocation, Comment, EnglishResource, Guide, InviteCode, InviteRedemption, Post, Report, SiteStat, SurveyResponse, TutorProfile, TutorRequest, User, utcnow
 from app.utils.security import admin_required, contains_html
 from app.utils.uploads import save_image
 
@@ -29,6 +30,31 @@ def dashboard():
         "tutor_requests": TutorRequest.query.filter_by(status="pending").count(),
     }
     return render_template("admin/dashboard.html", stats=stats)
+
+
+@bp.route("/stats")
+@admin_required
+def stats():
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    site_stat = db.session.get(SiteStat, 1)
+    return render_template("admin/stats.html", **{
+        "total_visits": site_stat.total_visits if site_stat else 0,
+        "user_total": User.query.count(),
+        "user_verified": User.query.filter_by(verification_status="verified").count(),
+        "user_pending": User.query.filter_by(verification_status="pending").count(),
+        "user_this_month": User.query.filter(User.created_at >= month_start).count(),
+        "post_total": Post.query.count(),
+        "post_pending": Post.query.filter_by(status="pending").count(),
+        "comment_total": Comment.query.count(),
+        "guide_total": Guide.query.count(),
+        "resource_total": EnglishResource.query.count(),
+        "resource_pending": EnglishResource.query.filter_by(status="pending").count(),
+        "location_total": CampusLocation.query.count(),
+        "tutor_request_total": TutorRequest.query.count(),
+        "report_pending": Report.query.filter_by(status="pending").count(),
+        "survey_response_total": SurveyResponse.query.count(),
+    })
 
 
 @bp.route("/users")
@@ -130,6 +156,34 @@ def verify_user(user_id):
     db.session.commit()
     flash("学生认证已通过。", "success")
     return redirect(url_for("admin.users"))
+
+
+@bp.route("/users/<int:user_id>/reset-password", methods=["GET", "POST"])
+@admin_required
+def reset_password(user_id):
+    user = db.get_or_404(User, user_id)
+    if user.id == current_user.id:
+        flash("请通过个人设置修改自己的密码。", "warning")
+        return redirect(url_for("admin.users"))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.new_password.data)
+        db.session.commit()
+        flash(f"已重置 {user.nickname} 的密码。", "success")
+        return redirect(url_for("admin.users"))
+    return render_template("admin/reset_password.html", form=form, user=user)
+
+
+@bp.route("/users/<int:user_id>/id-photo")
+@admin_required
+def user_id_photo(user_id):
+    user = db.get_or_404(User, user_id)
+    if not user.student_id_photo:
+        abort(404)
+    target = Path(current_app.config["ID_PHOTO_FOLDER"]) / user.student_id_photo
+    if not target.is_file():
+        abort(404)
+    return send_file(target, max_age=0)
 
 
 @bp.route("/users/<int:user_id>/revoke", methods=["POST"])

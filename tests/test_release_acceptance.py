@@ -174,3 +174,43 @@ def test_modern_interaction_assets_are_served(client):
     css = client.get("/static/css/site.css")
     assert "to-top" in css.get_data(as_text=True)
     assert "prefers-reduced-motion" in css.get_data(as_text=True)
+
+
+def test_register_page_has_photo_upload_and_no_invite_modal(client):
+    response = client.get("/auth/register")
+    assert response.status_code == 200
+    text = response.get_data(as_text=True)
+    assert "获取邀请码" not in text
+    assert "invite-qr-modal" not in text
+    assert 'name="student_id_photo"' in text
+    assert "校园卡人像面照片" in text
+    assert "邀请码（选填）" in text
+    assert "保护你的隐私" in text
+    assert "仅管理员可见" in text
+
+
+def test_blue_006dae_is_part_of_theme(client):
+    css = client.get("/static/css/site.css?v=1.9.0").get_data(as_text=True)
+    assert "linear-gradient(135deg,#006DAE,var(--mint-deep))" in css
+    assert "a:hover{color:var(--blue)}" in css
+    assert "rgba(0,109,174,.16)" in css
+    assert "--blue-deep:#005a93" in css
+
+
+def test_article_body_has_normal_line_spacing(client):
+    css = client.get("/static/css/site.css?v=1.8.0").get_data(as_text=True)
+    assert "white-space:pre-line" not in css
+    assert ".article-body p{margin:.45em 0}" in css
+
+
+def test_footer_shows_contact_qr_codes(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    text = response.get_data(as_text=True)
+    assert "有问题？联系我们" in text
+    assert "dogeeer.png" in text
+    assert "han.png" in text
+    for name in ("dogeeer.png", "han.png"):
+        img = client.get(f"/static/img/{name}")
+        assert img.status_code == 200
+        assert img.content_type.startswith("image/")
