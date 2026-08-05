@@ -2,3 +2,41 @@
 @media(max-width:850px){.nav-toggle{display:block}.nav-links{display:none;position:absolute;top:62px;left:16px;right:16px;flex-direction:column;align-items:stretch;background:#fff;border:1px solid var(--line);padding:16px;border-radius:14px;box-shadow:var(--shadow)}.nav-links.open{display:flex}.hero-grid,.map-layout,.profile-grid,.admin-columns{grid-template-columns:1fr}.hero{padding:50px 0}.hero-panel{display:none}.feature-grid,.stats-grid{grid-template-columns:repeat(2,1fr)}.filter-bar{grid-template-columns:1fr 1fr}.campus-map,.profile-card{position:relative;top:auto;min-height:420px}.title-row{align-items:flex-start;flex-direction:column}}@media(max-width:590px){.section{padding:42px 0}.feature-grid,.split-grid,.post-grid,.guide-grid,.resource-grid,.tutor-grid,.stats-grid{grid-template-columns:1fr}.filter-bar{grid-template-columns:1fr}.page-header{padding:38px 0 30px}.hero h1{letter-spacing:-1px}.location-card{grid-template-columns:80px 1fr}.location-card img,.location-placeholder{width:80px;height:80px}.footer-grid{flex-direction:column}.article{padding:22px}.report-box form{flex-direction:column}}
 .admin-nav{flex-wrap:wrap}.admin-nav-group{display:flex;flex-direction:column;gap:4px;background:#f7f8fa;border:1px solid #e8eaed;border-radius:8px;padding:8px 12px;min-width:120px}.admin-nav-title{font-size:12px;color:#8a8f98;font-weight:600;letter-spacing:.5px}.admin-nav-links{display:flex;flex-wrap:wrap;gap:8px}.admin-nav-links a{color:#006DAE}#guide-content,#english-content{scroll-margin-top:20px}
 .article-body{line-height:1.85;overflow-wrap:break-word;white-space:pre-line}.article-body img{max-width:100%;height:auto;border-radius:12px;margin:10px 0}.article-body a{color:var(--blue);text-decoration:underline}.article-body blockquote{margin:14px 0;padding:10px 16px;border-left:4px solid var(--teal);background:#eef5f1;border-radius:0 10px 10px 0;color:var(--muted)}.article-body pre{background:#f2f5f8;padding:12px 14px;border-radius:10px;overflow:auto;font-size:14px}.article-body code{background:#eef2f6;padding:2px 6px;border-radius:6px;font-size:14px}.article-body table{width:100%;border-collapse:collapse;margin:12px 0}.article-body th,.article-body td{border:1px solid var(--line);padding:8px 10px}.article-body h2,.article-body h3,.article-body h4{margin:18px 0 8px;color:var(--ink)}.article-body ul,.article-body ol{padding-left:22px;margin:10px 0}
+/* ===== 现代化交互效果（v1.4.0） ===== */
+.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s cubic-bezier(.22,.61,.36,1)}
+.js .reveal.in{opacity:1;transform:none}
+.btn{transition:transform .18s ease,box-shadow .25s ease,background-color .25s ease,border-color .25s ease,color .2s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.feature-card,.guide-card,.post-card,.resource-card,.tutor-card,.card,.stat-card,.location-card{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.feature-card:hover,.guide-card:hover,.post-card:hover,.resource-card:hover,.tutor-card:hover,.card:hover,.location-card:hover{transform:translateY(-4px);border-color:#cfe0d5}
+.stat-card:hover{transform:translateY(-2px);border-color:#cfe0d5}
+.site-header{transition:box-shadow .3s ease}
+.site-header.scrolled{box-shadow:0 6px 24px rgba(16,43,78,.09)}
+.nav-links>a{position:relative}
+.nav-links>a:not(.nav-cta)::after{content:"";position:absolute;left:0;bottom:-5px;width:100%;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--navy));transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+.nav-links>a:not(.nav-cta):hover{color:var(--navy)}
+.nav-links>a:not(.nav-cta):hover::after{transform:scaleX(1)}
+.input{transition:border-color .2s ease,box-shadow .2s ease}
+.input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 4px rgba(63,138,110,.16)}
+.flash{animation:flash-in .4s ease}
+@keyframes flash-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.hero-grid{animation:hero-in .7s cubic-bezier(.22,.61,.36,1)}
+@keyframes hero-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.hero-panel{animation:float 7s ease-in-out infinite}
+@keyframes float{0%,100%{transform:rotate(1deg) translateY(0)}50%{transform:rotate(1deg) translateY(-8px)}}
+.tag,.status,.difficulty,.chip{transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,color .2s ease}
+.tag:hover,.status:hover,.chip:hover{transform:translateY(-1px)}
+tbody tr{transition:background-color .18s ease}
+tbody tr:hover{background:#f4faf7}
+.nav-links.open{animation:menu-in .22s ease}
+@keyframes menu-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.to-top{position:fixed;right:22px;bottom:22px;z-index:40;width:44px;height:44px;border:0;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--mint-deep));color:#fff;font-size:19px;font-weight:800;box-shadow:0 8px 20px rgba(40,93,76,.32);opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .3s ease,transform .3s ease}
+.to-top.show{opacity:1;pointer-events:auto;transform:none}
+.to-top:hover{transform:translateY(-2px)}
+.to-top:active{transform:scale(.94)}
+.avatar{transition:transform .25s ease}
+.tutor-card:hover .avatar{transform:scale(1.06)}
+.pagination a{transition:color .2s ease,transform .2s ease}
+.pagination a:hover{color:var(--navy)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
