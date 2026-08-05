@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% from '_form.html' import render_form %}{% block title %}登录{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">欢迎回来</span><h1>登录学生助手</h1>{{ render_form(form) }}<p class="form-note"><a href="{{ url_for('auth.forgot_password') }}">忘记密码？</a> · 还没有账号？<a href="{{ url_for('auth.register') }}">注册</a></p></section>{% endblock %}
+

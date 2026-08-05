@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% from '_form.html' import render_form %}{% block title %}{% if survey %}编辑调查{% else %}新建调查{% endif %}{% endblock %}{% block content %}<section class="form-page container narrow"><a class="back" href="{{ url_for('survey_admin.index') }}">← 返回调查管理</a><span class="eyebrow">调查基本信息</span><h1>{% if survey %}编辑调查{% else %}新建调查{% endif %}</h1><p>默认关闭重复提交和答卷修改；不要默认收集姓名、学号、手机号等敏感信息。</p>{{ render_form(form) }}</section>{% endblock %}
+

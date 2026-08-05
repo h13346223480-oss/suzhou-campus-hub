@@ -1,0 +1,36 @@
+{% extends 'base.html' %}{% block title %}{{ survey.title }}{% endblock %}{% block content %}
+<section class="survey-shell"><div class="survey-container">
+  {% if admin_preview %}<div class="callout">管理员预览：当前调查状态为“{{ status_label(survey.status) }}”，预览模式不能提交。</div>{% endif %}
+  <header class="survey-intro"><span class="eyebrow">学生需求调查</span><h1>{{ survey.title }}</h1><p>{{ survey.description }}</p><div class="survey-meta"><span>预计 {{ survey.estimated_minutes }} 分钟</span><span>{{ survey.questions|length }} 个问题</span><span>{% if survey.allow_anonymous %}支持匿名填写{% else %}需登录填写{% endif %}</span></div></header>
+  <div class="survey-progress" aria-label="填写进度"><div id="survey-progress-bar"></div></div><p class="progress-text">已完成 <strong id="survey-progress-count">0</strong> / {{ survey.questions|length }}</p>
+  <form method="post" class="survey-form" id="survey-form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="source" value="{{ source }}"><input type="hidden" name="completion_seconds" id="completion-seconds" value="0">
+    {% for question in survey.questions %}{% set key='q_' ~ question.id %}{% set rules=survey_rules(question) %}
+    <fieldset class="question-card {% if errors.get(question.id) %}has-error{% endif %}" data-question>
+      <legend><span class="question-number">{{ loop.index }}</span><span>{{ question.title }} {% if question.is_required %}<em>必填</em>{% else %}<small>选填</small>{% endif %}</span></legend>
+      {% if question.description %}<p class="question-description">{{ question.description }}</p>{% endif %}
+      {% if errors.get(question.id) %}<div class="question-error">{{ errors[question.id] }}</div>{% endif %}
+      {% if question.question_type == 'single_choice' %}
+        {% set initial_data=initial.get(key,{}) %}{% set selected=request.form.get(key) if request.method=='POST' else initial_data.get('value','') %}
+        <div class="choice-list">{% for option in question.options %}<label class="choice"><input type="radio" name="{{ key }}" value="{{ option.value }}" {% if selected==option.value %}checked{% endif %} {% if question.is_required %}required{% endif %}><span>{{ option.label }}</span></label>{% if option.value=='other' %}<input class="input other-input" name="{{ key }}_other" value="{{ request.form.get(key ~ '_other','') if request.method=='POST' else initial_data.get('other','') }}" placeholder="请填写其他内容">{% endif %}{% endfor %}</div>
+      {% elif question.question_type == 'multiple_choice' %}
+        {% set initial_data=initial.get(key,{}) %}{% set selected=request.form.getlist(key) if request.method=='POST' else initial_data.get('values',[]) %}
+        <div class="choice-list">{% for option in question.options %}<label class="choice"><input type="checkbox" name="{{ key }}" value="{{ option.value }}" {% if option.value in selected %}checked{% endif %}><span>{{ option.label }}</span></label>{% if option.value=='other' %}<input class="input other-input" name="{{ key }}_other" value="{{ request.form.get(key ~ '_other','') if request.method=='POST' else initial_data.get('other','') }}" placeholder="请填写其他内容">{% endif %}{% endfor %}</div>{% if rules.get('max_choices') %}<small class="field-hint">最多选择 {{ rules.max_choices }} 项</small>{% endif %}
+      {% elif question.question_type in ['short_text','long_text'] %}
+        {% set value=request.form.get(key,'') if request.method=='POST' else initial.get(key,'') %}{% if question.question_type=='long_text' %}<textarea class="input" name="{{ key }}" {% if rules.get('max_length') %}maxlength="{{ rules.max_length }}"{% endif %} {% if question.is_required %}required{% endif %}>{{ value }}</textarea>{% else %}<input class="input" name="{{ key }}" value="{{ value }}" {% if rules.get('max_length') %}maxlength="{{ rules.max_length }}"{% endif %} {% if question.is_required %}required{% endif %}>{% endif %}{% if rules.get('max_length') %}<small class="field-hint">最多 {{ rules.max_length }} 字</small>{% endif %}
+      {% elif question.question_type in ['number','rating'] %}
+        {% set value=request.form.get(key,'') if request.method=='POST' else initial.get(key,'') %}{% if question.question_type=='rating' %}<div class="rating-row">{% for score in range(rules.get('min_value',1),rules.get('max_value',5)+1) %}<label><input type="radio" name="{{ key }}" value="{{ score }}" {% if value|string==score|string %}checked{% endif %} {% if question.is_required %}required{% endif %}><span>{{ score }}</span></label>{% endfor %}</div>{% else %}<input class="input" type="number" name="{{ key }}" value="{{ value }}" {% if rules.get('min_value') is not none %}min="{{ rules.min_value }}"{% endif %} {% if rules.get('max_value') is not none %}max="{{ rules.max_value }}"{% endif %} {% if question.is_required %}required{% endif %}>{% endif %}
+      {% elif question.question_type == 'matrix_single_choice' %}
+        {% set initial_data=initial.get(key,{}) %}<div class="matrix-wrap"><table class="matrix-table"><thead><tr><th>项目</th>{% for option in question.options %}<th>{{ option.label }}</th>{% endfor %}</tr></thead><tbody>{% for row in rules.get('rows',[]) %}{% set row_key=key ~ '_' ~ loop.index0 %}{% set row_value=request.form.get(row_key,'') if request.method=='POST' else initial_data.get(row,'') %}<tr><th>{{ row }}</th>{% for option in question.options %}<td><input type="radio" name="{{ row_key }}" value="{{ option.value }}" aria-label="{{ row }}：{{ option.label }}" {% if row_value==option.value %}checked{% endif %} {% if question.is_required %}required{% endif %}></td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+      {% elif question.question_type == 'consent' %}
+        {% set value=request.form.get(key,'') if request.method=='POST' else initial.get(key,'') %}<label class="consent-choice"><input type="checkbox" name="{{ key }}" value="yes" {% if value=='yes' %}checked{% endif %} required><span>我已阅读说明并同意参与本调查</span></label>
+      {% endif %}
+    </fieldset>{% endfor %}
+    <div class="survey-privacy"><strong>隐私提示</strong><p>不默认收集姓名、学号、身份证号、手机号、精确住址或学生证照片。公开页面不会展示任何其他人的回答。</p></div>
+    {% if state == 'open' %}<button class="btn primary survey-submit" type="submit">提交调查</button>{% endif %}
+  </form>
+  <p class="survey-disclaimer">本调查由学生自发组织，仅用于校园需求分析，与学校官方无隶属或授权关系。</p>
+</div></section>
+<script>
+(()=>{const started=Date.now(),form=document.getElementById('survey-form'),cards=[...document.querySelectorAll('[data-question]')],bar=document.getElementById('survey-progress-bar'),count=document.getElementById('survey-progress-count');function done(card){const fields=[...card.querySelectorAll('input:not([type=hidden]),textarea,select')];return fields.some(f=>(['radio','checkbox'].includes(f.type)?f.checked:f.value.trim()));}function update(){const n=cards.filter(done).length;count.textContent=n;bar.style.width=(cards.length?n/cards.length*100:0)+'%';}form.addEventListener('input',update);form.addEventListener('change',update);form.addEventListener('submit',()=>document.getElementById('completion-seconds').value=Math.round((Date.now()-started)/1000));update();})();
+</script>{% endblock %}

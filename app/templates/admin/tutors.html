@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}教师资料审核{% endblock %}
+{% block content %}
+<section class="section container"><h1>教师资料审核</h1>{% include 'admin/_nav.html' %}<div class="table-wrap"><table><thead><tr><th>用户</th><th>科目</th><th>成绩概述</th><th>状态</th><th>操作</th></tr></thead><tbody>{% for item in profiles %}<tr><td>{{ item.user.nickname }}</td><td>{{ item.subjects }}</td><td>{{ item.exam_score_description }}</td><td>{{ status_label(item.status) }}</td><td class="button-row"><form method="post" action="{{ url_for('admin.moderate_tutor', profile_id=item.id, action='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small primary">通过</button></form><form method="post" action="{{ url_for('admin.moderate_tutor', profile_id=item.id, action='reject') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary">拒绝</button></form></td></tr>{% else %}<tr><td colspan="5">暂无教师申请。</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

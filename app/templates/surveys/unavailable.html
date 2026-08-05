@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block title %}{{ survey.title }}{% endblock %}{% block content %}<section class="survey-state container narrow"><span class="eyebrow">学生需求调查</span><h1>{{ survey.title }}</h1>{% if state=='upcoming' %}<h2>调查尚未开始</h2><p>开始时间：{{ survey.start_at.strftime('%Y年%m月%d日 %H:%M') }}</p>{% elif state=='paused' %}<h2>调查暂时暂停</h2><p>维护者正在整理设置，请稍后再试。</p>{% elif state=='disabled' %}<h2>公开调查功能暂未开放</h2><p>历史数据仍由管理员妥善保留。</p>{% else %}<h2>本次调查已结束</h2><p>感谢大家的关注与参与。</p>{% endif %}<div class="callout">本调查由学生自发组织，仅用于校园需求分析，与学校官方无隶属或授权关系。</div></section>{% endblock %}
+

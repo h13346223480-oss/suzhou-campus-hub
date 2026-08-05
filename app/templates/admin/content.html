@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}内容管理{% endblock %}
+{% block content %}
+<section class="section container"><h1>攻略与英语资料</h1>{% include 'admin/_nav.html' %}<div class="admin-columns">
+  <form class="form-card" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>新增内容</h2>
+    <div class="field"><label>类型</label><select class="input" name="kind"><option value="guide">新生攻略</option><option value="english">英语资料</option></select></div>
+    <div class="field"><label>标题</label><input class="input" name="title" maxlength="120" required></div>
+    <div class="field"><label>文章别名（攻略使用）</label><input class="input" name="slug" placeholder="例如 dorm-basics"></div>
+    <div class="field"><label>摘要</label><input class="input" name="summary" maxlength="240"></div>
+    <div class="field"><label>分类</label><select class="input" name="category"><optgroup label="攻略">{% for item in guide_categories %}<option>{{ item }}</option>{% endfor %}</optgroup><optgroup label="英语资料">{% for item in english_categories %}<option>{{ item }}</option>{% endfor %}</optgroup></select></div>
+    <div class="field"><label>适用专业</label><select class="input" name="major">{% for code,label in resource_major_choices %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select></div>
+    <div class="field"><label>正文</label><textarea class="input" name="content" required></textarea></div><button class="btn primary">创建内容</button>
+  </form>
+  <div><div id="guide-content"><h2>现有攻略</h2>{% for item in guides %}<div class="list-card"><strong>{{ item.title }}</strong><span>{{ item.category }}</span><a class="btn small secondary" href="{{ url_for('admin.edit_content', kind='guide', item_id=item.id) }}">编辑</a><form method="post" action="{{ url_for('admin.delete_content', kind='guide', item_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small danger">删除</button></form></div>{% else %}<div class="empty">暂无攻略。</div>{% endfor %}</div>
+    <div id="english-content"><h2>现有英语资料</h2>{% for item in resources %}<div class="list-card"><strong>{{ item.title }}</strong><span>{{ status_label(item.status) }}</span>{% if item.status != 'published' %}<form method="post" action="{{ url_for('admin.publish_content', kind='english', item_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small primary">审核发布</button></form>{% endif %}<a class="btn small secondary" href="{{ url_for('admin.edit_content', kind='english', item_id=item.id) }}">编辑</a><form method="post" action="{{ url_for('admin.delete_content', kind='english', item_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small danger">删除</button></form></div>{% else %}<div class="empty">暂无英语资料。</div>{% endfor %}</div>
+  </div>
+</div></section>
+{% endblock %}

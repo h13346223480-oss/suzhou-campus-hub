@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
+  <title>{% block title %}苏州校区学生助手{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container" aria-label="主导航">
+      <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">S</span><span>苏州校区学生助手<small>学生自发 · 非官方</small></span></a>
+      <button class="nav-toggle" type="button" aria-label="展开导航" aria-expanded="false" onclick="const n=document.getElementById('navlinks');n.classList.toggle('open');this.setAttribute('aria-expanded',n.classList.contains('open'))">菜单</button>
+      <div class="nav-links" id="navlinks">
+        <a href="{{ url_for('posts.index') }}">信息广场</a>
+        <a href="{{ url_for('guides.index') }}">新生指南</a>
+        <a href="{{ url_for('guides.campus_map') }}">校园地图</a>
+        <a href="{{ url_for('english_hub.index') }}">全英课堂</a>
+        {% if config.FEATURE_TUTORING_PUBLIC %}<a href="{{ url_for('tutoring.index') }}">家教服务</a>{% endif %}
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}
+          <a href="{{ url_for('main.profile') }}">{{ current_user.nickname }}</a>
+          <form action="{{ url_for('auth.logout') }}" method="post" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link-button">退出</button></form>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">登录</a><a class="nav-cta" href="{{ url_for('auth.register') }}">注册</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+  <main>
+    <div class="container flash-stack" aria-live="polite">
+      {% for category, message in get_flashed_messages(with_categories=true) %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+      {% if current_user.is_authenticated and current_user.requires_major_confirmation %}<div class="flash warning">你的专业信息待确认。<a href="{{ url_for('main.edit_major') }}">前往选择机器人工程或智能制造工程</a></div>{% endif %}
+    </div>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div><strong>苏州校区学生助手</strong><p>连接新生、学习资源与校园互助。</p></div>
+      <div class="footer-links"><a href="{{ url_for('main.about') }}">关于我们</a><a href="{{ url_for('main.terms') }}">用户协议</a><a href="{{ url_for('main.privacy') }}">隐私说明</a><a href="{{ url_for('main.community_rules') }}">社区规范</a></div>
+    </div>
+    <div class="container disclaimer">本平台由学生自发建设，与学校官方无隶属或授权关系。平台信息仅供参考，请以学校官方通知为准。</div>
+  </footer>
+</body>
+</html>

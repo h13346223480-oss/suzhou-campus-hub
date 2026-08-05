@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% from '_form.html' import render_form %}{% block title %}{% if question %}编辑问题{% else %}添加问题{% endif %}{% endblock %}{% block content %}<section class="form-page container narrow"><a class="back" href="{{ url_for('survey_admin.questions', survey_id=survey.id) }}">← 返回问题设置</a><span class="eyebrow">{{ survey.title }}</span><h1>{% if question %}编辑问题{% else %}添加问题{% endif %}</h1><div class="callout">选择题选项和矩阵行请每行填写一个。文字、选择数量、数字和评分限制只会对相应题型生效。</div>{{ render_form(form) }}</section>{% endblock %}
+

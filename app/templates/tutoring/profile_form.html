@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% from '_form.html' import render_form %}{% block title %}登记家教资料{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">教师资料</span><h1>{% if profile %}更新{% else %}登记{% endif %}家教资料</h1><p>请使用概述描述成绩，不要填写身份证号、准考证号或详细住址。更新后会重新进入审核。</p>{{ render_form(form) }}</section>{% endblock %}
+

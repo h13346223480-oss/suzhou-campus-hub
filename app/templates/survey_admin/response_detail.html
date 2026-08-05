@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}答卷 #{{ response.id }}{% endblock %}
+{% block content %}
+<section class="section container narrow"><a class="back" href="{{ url_for('survey_admin.responses', survey_id=survey.id) }}">← 返回答卷列表</a>
+  <div class="article response-detail"><div class="result-card-head"><div><span class="tag">答卷 #{{ response.id }}</span><h1>{{ survey.title }}</h1></div><span class="status response-{{ response.validity_status }}">{{ {'valid':'有效','invalid':'无效','test':'测试'}[response.validity_status] }}</span></div>
+    <p class="author">{{ response.submitted_at.strftime('%Y-%m-%d %H:%M') }} · {{ response.source }} · {{ response.user.nickname if response.user else '匿名参与' }} · {{ response.completion_seconds or 0 }} 秒</p>
+    <section class="validity-panel"><div><strong>答卷有效性</strong><p>统计默认只计算“有效”答卷；无效和测试答卷仍保留。</p></div>
+      <form method="post" action="{{ url_for('survey_admin.update_response_validity', survey_id=survey.id, response_id=response.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><select class="input" name="validity_status"><option value="valid" {% if response.validity_status=='valid' %}selected{% endif %}>有效</option><option value="invalid" {% if response.validity_status=='invalid' %}selected{% endif %}>无效</option><option value="test" {% if response.validity_status=='test' %}selected{% endif %}>测试</option></select><button class="btn primary" type="submit">保存状态</button></form>
+    </section>
+    {% for question in survey.questions %}{% set answer=answer_map.get(question.id) %}<div class="answer-block {% if question.is_contact_info %}contact-answer{% endif %}">
+      <div class="answer-title"><strong>{{ loop.index }}. {{ question.title }}</strong>{% if question.is_contact_info %}<span class="status sensitive-badge">联系方式 · 仅管理员</span>{% endif %}</div>
+      <p>{{ answer_display(answer) if answer else '未填写' }}</p>
+      {% if answer and question.question_type in ['short_text','long_text'] and not question.is_contact_info %}<div class="tag-summary">{% for tag in answer.tags %}<span class="tag">{{ tag.tag }}</span>{% else %}<span class="muted">尚未添加人工标签</span>{% endfor %}</div><a class="btn small secondary" href="{{ url_for('survey_admin.text_answers', survey_id=survey.id, question_id=question.id) }}">进入文本标注</a>{% endif %}
+    </div>{% endfor %}
+    <section class="audit-panel"><h2>审计记录</h2><div class="audit-list">{% for item in audit_logs %}<div><strong>{{ {'created':'创建答卷','edited':'修改答卷','validity_changed':'更新有效性','deleted':'删除答卷'}.get(item.action,item.action) }}</strong><span>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }} · {{ item.actor.nickname if item.actor else '提交者/系统' }}{% if item.previous_status or item.new_status %} · {{ item.previous_status or '—' }} → {{ item.new_status or '—' }}{% endif %}</span></div>{% else %}<div class="empty">这份历史答卷暂时没有旧版审计记录。</div>{% endfor %}</div></section>
+    <div class="danger-zone"><div><strong>删除答卷</strong><p>删除前必须进入二次确认页。删除动作会保留审计记录，但答卷内容将不可恢复。</p></div><a class="btn danger" href="{{ url_for('survey_admin.confirm_delete_response', survey_id=survey.id, response_id=response.id) }}">进入删除确认</a></div>
+  </div>
+</section>
+{% endblock %}

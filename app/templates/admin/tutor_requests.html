@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}家教需求管理{% endblock %}
+{% block content %}
+<section class="section container"><h1>家教需求管理</h1>{% include 'admin/_nav.html' %}<div class="callout">此页面包含敏感联系方式，仅用于人工匹配，请勿复制到公开内容。</div><div class="table-wrap"><table><thead><tr><th>联系人</th><th>年级/科目</th><th>预算</th><th>状态</th><th>操作</th></tr></thead><tbody>{% for item in requests %}<tr><td>{{ item.contact_name }}</td><td>{{ item.student_grade }} / {{ item.subjects }}</td><td>{{ item.budget }}</td><td>{{ status_label(item.status) }}</td><td><a class="btn small secondary" href="{{ url_for('admin.tutor_request_detail', request_id=item.id) }}">查看详情</a></td></tr>{% else %}<tr><td colspan="5">暂无家教需求。</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

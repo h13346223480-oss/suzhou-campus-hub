@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block title %}无权访问{% endblock %}{% block content %}<section class="error-page container narrow"><strong>403</strong><h1>这里需要更高权限</h1><p>你当前的账号不能访问这个页面。</p><a class="btn primary" href="{{ url_for('main.home') }}">返回首页</a></section>{% endblock %}
+

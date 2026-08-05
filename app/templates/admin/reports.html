@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}举报处理{% endblock %}
+{% block content %}
+<section class="section container"><h1>举报处理</h1>{% include 'admin/_nav.html' %}<div class="table-wrap"><table><thead><tr><th>举报人</th><th>目标</th><th>原因</th><th>状态</th><th>操作</th></tr></thead><tbody>{% for item in reports %}<tr><td>{{ item.reporter.nickname }}</td><td>{{ {'post':'帖子'}.get(item.target_type, item.target_type) }} #{{ item.target_id }}</td><td>{{ item.reason }}</td><td>{{ status_label(item.status) }}</td><td><form method="post" action="{{ url_for('admin.resolve_report', report_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small primary">标记已处理</button></form></td></tr>{% else %}<tr><td colspan="5">暂无举报。</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

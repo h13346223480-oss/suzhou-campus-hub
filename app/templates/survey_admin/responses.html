@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}调查答卷{% endblock %}
+{% block content %}
+<section class="page-header"><div class="container"><span class="eyebrow">原始答卷</span>
+  <div class="title-row"><div><h1>{{ survey.title }}</h1><p>仅管理员可查看。默认列出全部状态，统计页面仅计算有效答卷。</p></div>
+    <div class="actions"><a class="btn secondary" href="{{ url_for('survey_admin.stats', survey_id=survey.id) }}">返回统计</a><a class="btn secondary" href="{{ url_for('survey_admin.export_csv', survey_id=survey.id, **request.args) }}">导出 CSV</a><a class="btn secondary" href="{{ url_for('survey_admin.export_xlsx', survey_id=survey.id, **request.args) }}">导出 XLSX</a>{% if survey.questions|selectattr('is_contact_info')|list %}<a class="btn secondary sensitive-action" href="{{ url_for('survey_admin.export_invite_list', survey_id=survey.id, **request.args) }}">内测邀请名单</a>{% endif %}</div>
+  </div>
+</div></section>
+<section class="section container">
+  <form class="filter-bar survey-result-filters" method="get">
+    <label><span>开始日期</span><input class="input" type="date" name="date_from" value="{{ request.args.get('date_from','') }}"></label>
+    <label><span>结束日期</span><input class="input" type="date" name="date_to" value="{{ request.args.get('date_to','') }}"></label>
+    <label><span>专业</span><select class="input" name="major"><option value="">全部专业</option>{% for code,label in student_major_choices %}<option value="{{ code }}" {% if request.args.get('major')==code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>来源渠道</span><input class="input" name="source" value="{{ request.args.get('source','') }}" placeholder="例如 homepage"></label>
+    <label><span>用户身份</span><select class="input" name="logged"><option value="">全部身份</option><option value="yes" {% if request.args.get('logged')=='yes' %}selected{% endif %}>登录用户</option><option value="no" {% if request.args.get('logged')=='no' %}selected{% endif %}>匿名用户</option></select></label>
+    <label><span>答卷状态</span><select class="input" name="validity"><option value="">全部状态</option><option value="valid" {% if request.args.get('validity')=='valid' %}selected{% endif %}>有效</option><option value="invalid" {% if request.args.get('validity')=='invalid' %}selected{% endif %}>无效</option><option value="test" {% if request.args.get('validity')=='test' %}selected{% endif %}>测试</option></select></label>
+    <button class="btn primary" type="submit">筛选</button>
+  </form>
+  <div class="table-wrap"><table><thead><tr><th>编号</th><th>提交时间</th><th>状态</th><th>来源</th><th>身份</th><th>用时</th><th>操作</th></tr></thead><tbody>
+  {% for item in responses %}<tr><td>#{{ item.id }}</td><td>{{ item.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td><td><span class="status response-{{ item.validity_status }}">{{ {'valid':'有效','invalid':'无效','test':'测试'}[item.validity_status] }}</span></td><td>{{ item.source }}</td><td>{{ item.user.nickname if item.user else '匿名' }}</td><td>{{ item.completion_seconds or 0 }} 秒</td><td><a class="btn small secondary" href="{{ url_for('survey_admin.response_detail', survey_id=survey.id, response_id=item.id) }}">查看与标记</a></td></tr>
+  {% else %}<tr><td colspan="7">暂无符合条件的答卷。</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

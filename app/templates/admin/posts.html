@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}帖子审核{% endblock %}
+{% block content %}
+<section class="section container"><h1>帖子审核</h1>{% include 'admin/_nav.html' %}
+  <div class="table-wrap"><table><thead><tr><th>标题</th><th>发布者</th><th>分类</th><th>状态</th><th>操作</th></tr></thead>
+  <tbody>{% for post in posts %}<tr><td><a href="{{ url_for('posts.detail', post_id=post.id) }}">{{ post.title }}</a></td><td>{{ post.author.nickname }}{% if post.is_anonymous %}（前台匿名）{% endif %}</td><td>{{ post.category }}</td><td>{{ status_label(post.status) }}</td><td class="button-row"><form method="post" action="{{ url_for('admin.moderate_post', post_id=post.id, action='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small primary">通过</button></form><form method="post" action="{{ url_for('admin.moderate_post', post_id=post.id, action='hide') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary">隐藏</button></form><form method="post" action="{{ url_for('admin.moderate_post', post_id=post.id, action='delete') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small danger">删除</button></form></td></tr>{% else %}<tr><td colspan="5">暂无帖子。</td></tr>{% endfor %}</tbody></table></div>
+</section>
+{% endblock %}

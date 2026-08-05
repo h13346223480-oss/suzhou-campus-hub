@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}评论审核{% endblock %}
+{% block content %}
+<section class="section container"><h1>评论审核</h1>{% include 'admin/_nav.html' %}<div class="table-wrap"><table><thead><tr><th>作者</th><th>内容</th><th>状态</th><th>操作</th></tr></thead><tbody>{% for item in comments %}<tr><td>{{ item.author.nickname }}</td><td>{{ item.content }}</td><td>{{ status_label(item.status) }}</td><td><form method="post" action="{{ url_for('admin.hide_comment', comment_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary">隐藏</button></form></td></tr>{% else %}<tr><td colspan="4">暂无评论。</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

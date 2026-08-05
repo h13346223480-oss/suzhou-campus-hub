@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}问题设置{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">调查问题</span>
+    <div class="title-row">
+      <div>
+        <h1>{{ survey.title }}</h1>
+        <p>{{ survey.questions|length }} 个问题 · 使用上移/下移调整顺序</p>
+      </div>
+      <a class="btn primary" href="{{ url_for('survey_admin.add_question', survey_id=survey.id) }}">添加问题</a>
+    </div>
+  </div>
+</section>
+<section class="section container narrow">
+  <div class="question-admin-list">
+    {% for question in survey.questions %}
+      <article class="question-admin-card">
+        <span class="question-number">{{ loop.index }}</span>
+        <div>
+          <div>
+            <span class="tag">{{ {'single_choice':'单选','multiple_choice':'多选','short_text':'短文本','long_text':'长文本','number':'数字','rating':'评分','matrix_single_choice':'矩阵单选','consent':'知情同意'}[question.question_type] }}</span>
+            {% if question.is_required %}<span class="required-label">必填</span>{% endif %}
+            {% if question.is_contact_info %}<span class="status sensitive-badge">联系方式 · 仅管理员</span>{% endif %}
+          </div>
+          <h2>{{ question.title }}</h2>
+          {% if question.options %}<p>{{ question.options|map(attribute='label')|join(' / ') }}</p>{% endif %}
+          {% if question.is_contact_info %}<p class="muted">不会进入普通图表或匿名汇总，只会出现在受限原始答卷与内测邀请名单中。</p>{% endif %}
+          <div class="button-row">
+            <a class="btn small secondary" href="{{ url_for('survey_admin.edit_question', survey_id=survey.id, question_id=question.id) }}">编辑</a>
+            {% if not loop.first %}<form method="post" action="{{ url_for('survey_admin.move_question', survey_id=survey.id, question_id=question.id, direction='up') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary">上移</button></form>{% endif %}
+            {% if not loop.last %}<form method="post" action="{{ url_for('survey_admin.move_question', survey_id=survey.id, question_id=question.id, direction='down') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small secondary">下移</button></form>{% endif %}
+            <form method="post" action="{{ url_for('survey_admin.delete_question', survey_id=survey.id, question_id=question.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn small danger">删除</button></form>
+          </div>
+        </div>
+      </article>
+    {% else %}
+      <div class="empty">还没有问题。至少添加一个问题后才能发布。</div>
+    {% endfor %}
+  </div>
+  <div class="actions">
+    <a class="btn secondary" href="{{ url_for('survey_admin.index') }}">返回调查管理</a>
+    <a class="btn primary" href="{{ url_for('surveys.fill', slug=survey.slug) }}" target="_blank">预览调查</a>
+  </div>
+</section>
+{% endblock %}
