@@ -1,7 +1,8 @@
 def test_home_uses_student_platform_positioning_and_six_core_entries(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "首届本科生的信息、学习与校园互助平台" in response.text
+    assert "欢迎来到" in response.text
+    assert "东蒙Hub" in response.text
     for label in ["新生指南", "校园地图", "信息广场", "全英课堂助手", "学习资源", "校园互助"]:
         assert label in response.text
     assert "家教服务" not in response.text

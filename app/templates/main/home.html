@@ -1,14 +1,27 @@
-{% extends 'base.html' %}{% block title %}苏州校区学生助手{% endblock %}
+{% extends 'base.html' %}{% block title %}东蒙Hub{% endblock %}
 {% block content %}
-<section class="hero"><div class="container hero-grid"><div><span class="eyebrow">东南大学苏州校区 · 学生自发建设</span><h1>首届本科生的信息、学习与校园互助平台</h1><p>把新生指南、校园地图、全英课堂资料和同学互助放在一个清楚、可信的地方。</p><div class="actions"><a class="btn primary" href="{{ url_for('guides.index') }}">查看新生指南</a><a class="btn secondary" href="{{ url_for('posts.index') }}">进入信息广场</a></div><div class="notice">非官方学生平台，重要事项请以学校官方通知为准。</div></div><div class="hero-panel"><div class="mini-map"><span class="pin p1">宿舍</span><span class="pin p2">教学</span><span class="pin p3">食堂</span><span class="route"></span></div><p>校园区域示意图 · 不提供精确定位</p></div></div></section>
-<section class="section container"><div class="section-head"><div><span class="eyebrow">常用入口</span><h2>从你眼下的问题出发</h2></div></div><div class="feature-grid">
-  <a class="feature-card" href="{{ url_for('guides.index') }}"><span class="icon warm">01</span><h3>新生指南</h3><p>报到、宿舍、交通与周边生活经验。</p></a>
-  <a class="feature-card" href="{{ url_for('guides.campus_map') }}"><span class="icon blue">02</span><h3>校园地图</h3><p>认识教学、生活、食堂与交通区域。</p></a>
-  <a class="feature-card" href="{{ url_for('posts.index') }}"><span class="icon teal">03</span><h3>信息广场</h3><p>分类浏览首届本科生关心的校区信息。</p></a>
-  <a class="feature-card" href="{{ url_for('english_hub.index') }}"><span class="icon purple">04</span><h3>全英课堂助手</h3><p>专业词汇、听课方法与展示经验。</p></a>
-  <a class="feature-card" href="{{ url_for('english_hub.index', category='课程经验') }}"><span class="icon warm">05</span><h3>学习资源</h3><p>机器人、智能制造与新能源学习资料。</p></a>
-  <a class="feature-card" href="{{ url_for('posts.index', category='校园求助') }}"><span class="icon teal">06</span><h3>校园互助</h3><p>学习搭子、失物招领与同学间互助。</p></a>
-</div></section>
+<section class="hero-full">
+  <span class="float-dot fd1"></span><span class="float-dot fd2"></span><span class="float-dot fd3"></span><span class="float-dot fd4"></span><span class="float-dot fd5"></span>
+  <div class="container hero-layout">
+    <div class="hero-side">
+      <a class="nav-card f1" href="{{ url_for('posts.index') }}"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><h3>信息广场</h3><p>分类浏览首届本科生关心的校区信息</p></a>
+      <a class="nav-card f2" href="{{ url_for('guides.campus_map') }}"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><h3>校园地图</h3><p>认识教学、生活、食堂与交通区域</p></a>
+      <a class="nav-card f3" href="{{ url_for('posts.index', category='校园求助') }}"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><h3>校园互助</h3><p>学习搭子、失物招领与同学间互助</p></a>
+    </div>
+    <div class="hero-center">
+      <span class="eyebrow">东南大学苏州校区 · 学生自发 · 非官方</span>
+      <h1 class="hero-title">欢迎来到<span class="hero-grad">东蒙Hub</span></h1>
+      <p class="hero-en">SEU-Monash Joint International School</p>
+      <p class="hero-sub">校园互助 · 学习资源 · 新生指南 · 全英课堂经验，一站汇集</p>
+      <div class="actions"><a class="btn primary hero-cta" href="{{ url_for('guides.index') }}">查看新生指南</a><a class="btn secondary hero-cta" href="{{ url_for('posts.index') }}">进入信息广场</a></div>
+    </div>
+    <div class="hero-side">
+      <a class="nav-card f4" href="{{ url_for('guides.index') }}"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><h3>新生指南</h3><p>报到、宿舍、交通与周边生活经验</p></a>
+      <a class="nav-card f5" href="{{ url_for('english_hub.index') }}"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><h3>全英课堂助手</h3><p>专业词汇、听课方法与展示经验</p></a>
+      <a class="nav-card f6" href="{{ url_for('english_hub.index', category='课程经验') }}"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg><h3>学习资源</h3><p>机器人、智能制造与新能源学习资料</p></a>
+    </div>
+  </div>
+</section>
 
 <section class="section soft"><div class="container"><div class="section-head"><div><span class="eyebrow">近期更新</span><h2>校区里的新消息</h2></div><a href="{{ url_for('posts.index') }}">查看全部 →</a></div><div class="split-grid"><div><h3 class="subheading">信息广场</h3>{% for post in latest_posts %}<a class="list-card" href="{{ url_for('posts.detail', post_id=post.id) }}"><span class="tag">{{ post.category }}</span><strong>{{ post.title }}</strong><small>{{ post.created_at.strftime('%m月%d日') }}</small></a>{% else %}<div class="empty">目前暂无已发布帖子。</div>{% endfor %}</div><div><h3 class="subheading">新生指南</h3>{% for guide in latest_guides %}<a class="list-card" href="{{ url_for('guides.detail', slug=guide.slug) }}"><span class="tag warm-tag">{{ guide.category }}</span><strong>{{ guide.title }}</strong><small>{{ guide.summary }}</small></a>{% else %}<div class="empty">目前暂无已发布指南。</div>{% endfor %}</div></div>{% if active_survey %}<aside class="survey-invite"><div><span class="eyebrow">需求调查</span><h3>参与首届本科生需求调查</h3><p>用 {{ active_survey.estimated_minutes }} 分钟告诉我们你最关心的问题。</p></div><a class="btn primary" href="{{ url_for('surveys.fill', slug=active_survey.slug, source='homepage') }}">填写调查</a></aside>{% endif %}</div></section>
 {% endblock %}
