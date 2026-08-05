@@ -2,6 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from flask import current_app
+from PIL import Image, UnidentifiedImageError
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
@@ -17,5 +18,11 @@ def save_image(upload):
     random_name = f"{uuid4().hex}.{extension}"
     target = Path(current_app.config["UPLOAD_FOLDER"]) / random_name
     upload.save(target)
+    try:
+        with Image.open(target) as image:
+            image.verify()
+    except (UnidentifiedImageError, OSError, ValueError):
+        target.unlink(missing_ok=True)
+        raise ValueError("图片内容无效，请重新选择")
     return f"uploads/{random_name}"
 

@@ -6,7 +6,9 @@ from app.extensions import db
 from app.forms import CommentForm, POST_CATEGORIES, PostForm, ReportForm
 from app.majors import PENDING_CONFIRMATION, USER_MAJOR_CODES
 from app.models import Bookmark, Comment, Post, Report, User
+from app.utils.sanitize import sanitize_html
 from app.utils.security import verified_required
+from app.utils.uploads import save_image
 
 bp = Blueprint("posts", __name__, url_prefix="/posts")
 
@@ -25,7 +27,6 @@ def ensure_post_visible(post):
 
 
 @bp.route("")
-@verified_required
 def index():
     categories = visible_categories()
     category = request.args.get("category", "").strip()
@@ -54,7 +55,6 @@ def index():
 
 
 @bp.route("/<int:post_id>")
-@verified_required
 def detail(post_id):
     post = db.get_or_404(Post, post_id)
     if post.category == "家教相关" and not current_app.config["FEATURE_TUTORING_PUBLIC"] and not current_user.is_admin:
@@ -74,13 +74,30 @@ def create():
     form = PostForm()
     form.category.choices = [(item, item) for item in visible_categories()]
     if form.validate_on_submit():
-        post = Post(author_id=current_user.id, title=form.title.data.strip(), category=form.category.data,
-                    content=form.content.data.strip(), is_anonymous=form.is_anonymous.data, status="pending")
-        db.session.add(post)
-        db.session.commit()
-        flash("信息已提交，将在管理员审核后公开。", "success")
-        return redirect(url_for("main.profile"))
+        clean_content = sanitize_html(form.content.data.strip())
+        if len(clean_content) < 10:
+            form.content.errors.append("正文内容不足，请补充有效文字。")
+        else:
+            post = Post(author_id=current_user.id, title=form.title.data.strip(), category=form.category.data,
+                        content=clean_content, is_anonymous=form.is_anonymous.data, status="pending")
+            db.session.add(post)
+            db.session.commit()
+            flash("信息已提交，将在管理员审核后公开。", "success")
+            return redirect(url_for("main.profile"))
     return render_template("posts/create.html", form=form)
+
+
+@bp.route("/upload-image", methods=["POST"])
+@verified_required
+def upload_image():
+    upload = request.files.get("image")
+    if not upload or not upload.filename:
+        return {"error": "未选择图片"}, 400
+    try:
+        image_path = save_image(upload)
+    except ValueError as exc:
+        return {"error": str(exc)}, 400
+    return {"location": url_for("static", filename=image_path)}
 
 
 @bp.route("/<int:post_id>/comment", methods=["POST"])

@@ -3,45 +3,52 @@ from flask import request
 
 from app import create_app
 from app.extensions import db
-from app.models import Guide
+from app.models import Guide, User
 from config import ProductionConfig, TestConfig, normalize_database_url, production_base_url
 
 
-PROTECTED_ROUTES = ["/posts", "/guides", "/guides/faq", "/guides/campus-map", "/english-hub"]
+PUBLIC_ROUTES = ["/posts", "/guides", "/guides/faq", "/guides/campus-map", "/english-hub"]
 
 
-def test_anonymous_users_are_redirected_from_campus_content(client):
-    for path in PROTECTED_ROUTES:
-        response = client.get(path)
-        assert response.status_code == 302
-        assert "/auth/login" in response.headers["Location"]
-
-
-def test_pending_student_cannot_read_campus_content(client, login):
-    login("pending@example.com")
-    for path in PROTECTED_ROUTES:
-        response = client.get(path)
-        assert response.status_code == 302
-        assert response.headers["Location"].endswith("/profile")
-
-
-def test_verified_student_can_read_campus_content(client, login):
-    login("verified@example.com")
-    for path in PROTECTED_ROUTES:
+def test_anonymous_users_can_read_public_content(client):
+    for path in PUBLIC_ROUTES:
         response = client.get(path)
         assert response.status_code == 200
 
 
-def test_public_home_does_not_leak_latest_campus_content(client, app):
+def test_pending_student_can_read_public_content(client, login):
+    login("pending@example.com")
+    for path in PUBLIC_ROUTES:
+        response = client.get(path)
+        assert response.status_code == 200
+
+
+def test_verified_student_can_read_campus_content(client, login):
+    login("verified@example.com")
+    for path in PUBLIC_ROUTES:
+        response = client.get(path)
+        assert response.status_code == 200
+
+
+def test_anonymous_users_cannot_access_write_actions(client):
+    # 只读公开；发布/评论/收藏/举报/投稿等写操作仍要求登录
+    assert client.get("/posts/create").status_code == 302
+    assert client.post("/posts/1/comment", data={"content": "你好"}).status_code == 302
+    assert client.post("/posts/1/bookmark").status_code == 302
+    assert client.post("/posts/1/report", data={"reason": "这是一个举报测试原因"}).status_code == 302
+    assert client.get("/english-hub/submit").status_code == 302
+
+
+def test_public_home_shows_latest_approved_content(client, app):
     with app.app_context():
         db.session.add(Guide(title="仅认证可见指南", slug="protected-guide", summary="校内摘要",
                              content="校内详细内容", category="报到指南", status="published"))
         db.session.commit()
     response = client.get("/")
     assert response.status_code == 200
-    assert "演示信息：学习搭子" not in response.text
-    assert "仅认证可见指南" not in response.text
-    assert "公开网址不代表校内内容公开" in response.text
+    assert "演示信息：学习搭子" in response.text
+    assert "仅认证可见指南" in response.text
+    assert "校内内容访问说明" not in response.text
 
 
 def test_health_check_reports_database_status(client):
@@ -141,3 +148,35 @@ def test_render_external_url_can_supply_production_base_url(monkeypatch):
     monkeypatch.delenv("APP_BASE_URL", raising=False)
     monkeypatch.setenv("RENDER_EXTERNAL_URL", "https://campus-hub.onrender.com")
     assert production_base_url() == "https://campus-hub.onrender.com"
+
+def test_admin_can_promote_another_user_to_admin(client, app, login):
+    login("admin@example.com")
+    with app.app_context():
+        user_id = db.session.query(User).filter_by(email="pending@example.com").first().id
+    response = client.post(f"/admin/users/{user_id}/set-admin")
+    assert response.status_code == 302
+    with app.app_context():
+        user = db.session.get(User, user_id)
+        assert user.is_admin
+        assert user.is_verified
+        assert user.is_active
+
+
+def test_admin_cannot_remove_own_admin_role(client, app, login):
+    login("admin@example.com")
+    with app.app_context():
+        admin_id = db.session.query(User).filter_by(email="admin@example.com").first().id
+    client.post(f"/admin/users/{admin_id}/unset-admin")
+    with app.app_context():
+        assert db.session.get(User, admin_id).is_admin
+
+
+def test_promoted_admin_can_access_admin_panel(client, app, login):
+    login("admin@example.com")
+    with app.app_context():
+        user_id = db.session.query(User).filter_by(email="verified@example.com").first().id
+    client.post(f"/admin/users/{user_id}/set-admin")
+    client.post("/auth/logout")
+    login("verified@example.com")
+    assert client.get("/admin").status_code == 200
+

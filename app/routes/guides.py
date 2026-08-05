@@ -3,13 +3,11 @@ from sqlalchemy import or_
 
 from app.forms import GUIDE_CATEGORIES, LOCATION_CATEGORIES
 from app.models import CampusLocation, Guide
-from app.utils.security import verified_required
 
 bp = Blueprint("guides", __name__, url_prefix="/guides")
 
 
 @bp.route("")
-@verified_required
 def index():
     category = request.args.get("category", "").strip()
     keyword = request.args.get("q", "").strip()
@@ -23,21 +21,18 @@ def index():
 
 
 @bp.route("/<slug>")
-@verified_required
 def detail(slug):
     guide = Guide.query.filter_by(slug=slug, status="published").first_or_404()
     return render_template("guides/detail.html", guide=guide)
 
 
 @bp.route("/faq")
-@verified_required
 def faq():
     items = Guide.query.filter_by(category="常见问题", status="published").all()
     return render_template("guides/faq.html", items=items)
 
 
 @bp.route("/campus-map")
-@verified_required
 def campus_map():
     category = request.args.get("category", "").strip()
     query = CampusLocation.query.filter_by(status="published")
