@@ -126,7 +126,8 @@ tbody tr:hover{background:#12202e}
 [data-theme="light"] body::before{opacity:.92}
 [data-theme="light"] .site-header{background:rgba(255,255,255,.86);box-shadow:0 12px 34px rgba(16,43,78,.1)}
 [data-theme="light"] .nav-toggle{background:#fff;color:var(--ink)}
-[data-theme="light"] .nav-links{background:#fff}
+[data-theme="light"] .nav-links{background:transparent}
+[data-theme="light"] .nav-links.open{background:#fff}
 [data-theme="light"] .theme-toggle{background:#fff;color:var(--ink)}
 [data-theme="light"] .hero-full{background:radial-gradient(720px 420px at 78% -8%,rgba(155,109,255,.14),transparent 60%),radial-gradient(640px 380px at 16% 12%,rgba(0,109,174,.2),transparent 58%),radial-gradient(760px 420px at 50% 112%,rgba(63,174,138,.1),transparent 60%),linear-gradient(180deg,#fdfefc,#eef4fb)}
 [data-theme="light"] .hero-title{color:#285D4C}
@@ -359,8 +360,8 @@ main{padding-top:96px}
 /* ===== v2.7.3 顶部毛玻璃更透明 ===== */
 .site-header{background:rgba(10,16,26,.5);border-color:rgba(255,255,255,.14)}
 .site-header.scrolled{background:rgba(8,13,22,.62)}
-[data-theme="light"] .site-header{background:rgba(255,255,255,.72)}
-[data-theme="light"] .site-header.scrolled{background:rgba(255,255,255,.8)}
+[data-theme="light"] .site-header{background:rgba(255,255,255,.42)}
+[data-theme="light"] .site-header.scrolled{background:rgba(255,255,255,.52)}
 
 /* ===== v2.7.4 搜索交互优化 ===== */
 /* 桌面搜索框：聚焦平滑展开 + 高亮 */
