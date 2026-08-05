@@ -6,7 +6,7 @@
   <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
   <script>try{var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','dark')}</script>
   <title>{% block title %}东蒙Hub{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.8.1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.9.0') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.1.0') }}">
 </head>
 <body>
@@ -27,8 +27,8 @@
         {% else %}
           <a href="{{ url_for('auth.login') }}">登录</a><a class="nav-cta" href="{{ url_for('auth.register') }}">注册</a>
         {% endif %}
-        <button class="theme-toggle" type="button" aria-label="切换亮暗模式" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="ico-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
       </div>
+      <button class="theme-toggle" type="button" aria-label="切换亮暗模式" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="ico-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
     </nav>
   </header>
   <div class="search-overlay" id="searchOverlay" aria-hidden="true">

@@ -445,3 +445,7 @@ main{padding-top:96px}
 /* ===== v2.8.1 左列整体略高于右列 ===== */
 .hero-layout > .hero-side:first-child{transform:translateY(-48px)}
 @media(max-width:900px){.hero-layout > .hero-side:first-child{transform:none}}
+
+/* ===== v2.9.0 列表标题单行省略 + 手机端主题按钮常驻 ===== */
+.list-card strong{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
+@media(max-width:900px){.site-header{overflow:visible}}
