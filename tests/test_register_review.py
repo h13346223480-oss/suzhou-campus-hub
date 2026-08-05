@@ -21,6 +21,11 @@ def _register(client, email, photo=True, invite="", password="StrongPass123!"):
     return client.post("/auth/register", data=data, content_type="multipart/form-data", follow_redirects=True)
 
 
+def test_register_page_hints_invite_skips_review(client):
+    text = client.get("/auth/register").get_data(as_text=True)
+    assert "填写有效邀请码可立即认证通过" in text
+
+
 def test_register_without_invite_creates_pending_user_with_photo(client, app, tmp_path):
     app.config["ID_PHOTO_FOLDER"] = tmp_path
     response = _register(client, "review-pending@example.com")
