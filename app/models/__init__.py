@@ -99,6 +99,16 @@ class InviteRedemption(db.Model):
     user = db.relationship("User", back_populates="invite_redemption")
 
 
+
+
+class PostCategory(db.Model):
+    """信息广场帖子分类：内置分类为代码常量，自定义分类存于此表。"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(30), unique=True, nullable=False, index=True)
+    is_custom = db.Column(db.Boolean, nullable=False, default=True)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)

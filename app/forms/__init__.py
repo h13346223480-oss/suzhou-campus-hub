@@ -10,7 +10,7 @@ from app.majors import RESOURCE_MAJOR_CHOICES, STUDENT_MAJOR_CHOICES
 from app.utils.security import contains_html
 from app.utils.uploads import ALLOWED_EXTENSIONS
 
-POST_CATEGORIES = ["校园求助", "二手交易", "失物招领", "拼车", "学习搭子", "校园趣事", "兼职信息", "家教相关"]
+POST_CATEGORIES = ["校园求助", "二手交易", "失物招领", "拼车", "学习搭子", "校园趣事", "美食推荐", "兼职信息", "家教相关"]
 GUIDE_CATEGORIES = ["报到指南", "宿舍生活", "食堂交通", "周边生活", "设备建议", "常见问题"]
 ENGLISH_CATEGORIES = ["专业词汇", "Lecture听课方法", "英文实验报告", "Presentation", "学术写作", "课程经验"]
 LOCATION_CATEGORIES = ["宿舍", "教学", "食堂", "交通", "生活服务"]

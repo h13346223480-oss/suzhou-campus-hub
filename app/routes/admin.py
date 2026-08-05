@@ -8,9 +8,9 @@ from flask_login import current_user
 from sqlalchemy import or_
 
 from app.extensions import db
-from app.forms import AdminCreateUserForm, ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES, ResetPasswordForm
+from app.forms import AdminCreateUserForm, ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES, POST_CATEGORIES, ResetPasswordForm
 from app.majors import PENDING_CONFIRMATION, RESOURCE_MAJOR_CODES, USER_MAJOR_CODES, normalize_resource_major
-from app.models import CampusLocation, Comment, EnglishResource, Guide, InviteCode, InviteRedemption, Post, Report, SiteStat, SurveyResponse, TutorProfile, TutorRequest, User, utcnow
+from app.models import CampusLocation, Comment, EnglishResource, Guide, InviteCode, InviteRedemption, Post, PostCategory, Report, SiteStat, SurveyResponse, TutorProfile, TutorRequest, User, utcnow
 from app.utils.security import admin_required, contains_html
 from app.utils.uploads import save_image
 
@@ -31,6 +31,38 @@ def dashboard():
     }
     return render_template("admin/dashboard.html", stats=stats)
 
+
+@bp.route("/categories", methods=["GET", "POST"])
+@admin_required
+def categories():
+    if request.method == "POST":
+        action = request.form.get("action", "")
+        if action == "add":
+            name = request.form.get("name", "").strip()
+            if not name or len(name) > 30 or contains_html(name):
+                flash("分类名称不能为空、超过 30 字或包含 HTML 标签。", "danger")
+            elif name in POST_CATEGORIES or PostCategory.query.filter_by(name=name).first():
+                flash("该分类已存在。", "warning")
+            else:
+                db.session.add(PostCategory(name=name, is_custom=True))
+                db.session.commit()
+                flash("自定义分类「{}」已添加。".format(name), "success")
+        elif action == "delete":
+            category_id = request.form.get("category_id", type=int)
+            category = db.session.get(PostCategory, category_id)
+            if not category:
+                flash("分类不存在。", "warning")
+            elif not category.is_custom:
+                flash("内置分类不能删除。", "warning")
+            elif Post.query.filter_by(category=category.name).first():
+                flash("该分类下已有帖子，不能删除。", "warning")
+            else:
+                db.session.delete(category)
+                db.session.commit()
+                flash("自定义分类「{}」已删除。".format(category.name), "success")
+        return redirect(url_for("admin.categories"))
+    custom_categories = PostCategory.query.order_by(PostCategory.sort_order, PostCategory.id).all()
+    return render_template("admin/categories.html", builtin_categories=POST_CATEGORIES, custom_categories=custom_categories)
 
 @bp.route("/stats")
 @admin_required

@@ -5,7 +5,7 @@ from sqlalchemy import func, or_
 from app.extensions import db
 from app.forms import CommentForm, POST_CATEGORIES, PostForm, ReportForm
 from app.majors import PENDING_CONFIRMATION, USER_MAJOR_CODES
-from app.models import Bookmark, Comment, Post, Report, User
+from app.models import Bookmark, Comment, Post, PostCategory, Report, User
 from app.utils.sanitize import sanitize_html
 from app.utils.security import verified_required
 from app.utils.uploads import save_image
@@ -15,8 +15,11 @@ bp = Blueprint("posts", __name__, url_prefix="/posts")
 
 def visible_categories():
     if current_app.config["FEATURE_TUTORING_PUBLIC"]:
-        return POST_CATEGORIES
-    return [item for item in POST_CATEGORIES if item != "家教相关"]
+        builtin = POST_CATEGORIES
+    else:
+        builtin = [item for item in POST_CATEGORIES if item != "家教相关"]
+    custom = [item.name for item in PostCategory.query.order_by(PostCategory.sort_order, PostCategory.id).all()]
+    return builtin + [item for item in custom if item not in builtin]
 
 
 def ensure_post_visible(post):
