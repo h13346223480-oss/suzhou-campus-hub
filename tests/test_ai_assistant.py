@@ -122,7 +122,7 @@ def test_admin_ai_usage_shows_aggregates(client, login, app):
     response = client.get("/admin/ai-usage")
     assert response.status_code == 200
     body = response.get_data(as_text=True)
-    assert "AI 助手用量统计" in body
+    assert "东蒙Assistant 用量统计" in body
     assert "累计提问次数" in body
     # 4 条记录：累计提问 4，总 tokens 600，费用 0.0008
     assert ">4<" in body.replace(" ", "").replace("\n", "")
@@ -136,4 +136,4 @@ def test_admin_ai_usage_empty_state(client, login):
     response = client.get("/admin/ai-usage")
     body = response.get_data(as_text=True)
     assert response.status_code == 200
-    assert "AI 助手还没有调用记录" in body
+    assert "东蒙Assistant 还没有调用记录" in body

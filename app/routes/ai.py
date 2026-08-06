@@ -26,9 +26,9 @@ def _rate_limited():
 @bp.post("/chat")
 def chat():
     if not current_user.is_authenticated:
-        return jsonify(error="请先登录后再使用 AI 助手。"), 401
+        return jsonify(error="请先登录后再使用东蒙Assistant。"), 401
     if not current_app.config["DEEPSEEK_API_KEY"]:
-        return jsonify(error="AI 助手暂未开放，请稍后再试。"), 503
+        return jsonify(error="东蒙Assistant 暂未开放，请稍后再试。"), 503
 
     data = request.get_json(silent=True) or {}
     message = (data.get("message") or "").strip()

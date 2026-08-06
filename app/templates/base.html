@@ -1,58 +1,114 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
-  <script>try{var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}</script>
+  <script>try { var t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t) } catch (e) { document.documentElement.setAttribute('data-theme', 'light') }</script>
   <title>{% block title %}东蒙Hub{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.14.1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.16.0') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.1.0') }}">
 </head>
+
 <body>
   <header class="site-header">
     <nav class="nav container" aria-label="主导航">
-      <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">待</span><span>待设计<small>学生自发 · 非官方</small></span></a><button class="nav-search-btn" type="button" aria-label="搜索" onclick="openSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
-      <button class="nav-toggle" type="button" aria-label="展开导航" aria-expanded="false" onclick="const n=document.getElementById('navlinks');n.classList.toggle('open');this.setAttribute('aria-expanded',n.classList.contains('open'))">菜单</button>
-      <div class="nav-links" id="navlinks"><form class="nav-search" action="{{ url_for('main.search') }}" method="get" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input name="q" type="search" placeholder="搜索全站" aria-label="全局搜索" autocomplete="off"></form>
+      <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">待</span><span>待设计<small>学生自发 ·
+            非官方</small></span></a><button class="nav-search-btn" type="button" aria-label="搜索"
+        onclick="openSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg></button>
+      <button class="nav-toggle" type="button" aria-label="展开导航" aria-expanded="false"
+        onclick="const n=document.getElementById('navlinks');n.classList.toggle('open');this.setAttribute('aria-expanded',n.classList.contains('open'))">菜单</button>
+      <div class="nav-links" id="navlinks">
+        <form class="nav-search" action="{{ url_for('main.search') }}" method="get" role="search"><svg
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg><input name="q" type="search" placeholder="搜索全站" aria-label="全局搜索" autocomplete="off"></form>
         <a href="{{ url_for('posts.index') }}">信息广场</a>
         <a href="{{ url_for('guides.index') }}">新生指南</a>
         <a href="{{ url_for('guides.campus_map') }}">校园地图</a>
         <a href="{{ url_for('english_hub.index') }}">全英课堂</a><a href="{{ url_for('polls.index') }}">投票</a>
+        <a class="nav-cta" href="{{ url_for('main.home') }}?ai=1">使用东蒙Assistant</a>
         {% if config.FEATURE_TUTORING_PUBLIC %}<a href="{{ url_for('tutoring.index') }}">家教服务</a>{% endif %}
         {% if current_user.is_authenticated %}
-          {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}
-          <a href="{{ url_for('main.profile') }}">{{ current_user.nickname }}</a>
-          <form action="{{ url_for('auth.logout') }}" method="post" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="link-button">退出</button></form>
+        {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}
+        <a href="{{ url_for('main.profile') }}">{{ current_user.nickname }}</a>
+        <form action="{{ url_for('auth.logout') }}" method="post" class="inline"><input type="hidden" name="csrf_token"
+            value="{{ csrf_token() }}"><button class="link-button">退出</button></form>
         {% else %}
-          <a href="{{ url_for('auth.login') }}">登录</a><a class="nav-cta" href="{{ url_for('auth.register') }}">注册</a>
+        <a href="{{ url_for('auth.login') }}">登录</a><a class="nav-cta" href="{{ url_for('auth.register') }}">注册</a>
         {% endif %}
       </div>
-      <button class="theme-toggle" type="button" aria-label="切换亮暗模式" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="ico-sun"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+      <button class="theme-toggle" type="button" aria-label="切换亮暗模式" onclick="toggleTheme()"><svg viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+          class="ico-sun">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg></button>
     </nav>
   </header>
   <div class="search-overlay" id="searchOverlay" aria-hidden="true">
     <form class="search-overlay-bar" action="{{ url_for('main.search') }}" method="get" role="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
       <input name="q" type="search" placeholder="搜索帖子、指南、学习资源" aria-label="全局搜索" autocomplete="off">
-      <button type="button" class="search-overlay-close" onclick="closeSearch()" aria-label="关闭搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <button type="button" class="search-overlay-close" onclick="closeSearch()" aria-label="关闭搜索"><svg
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg></button>
     </form>
   </div>
   <main>
     <div class="container flash-stack" aria-live="polite">
-      {% for category, message in get_flashed_messages(with_categories=true) %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
-      {% if current_user.is_authenticated and current_user.requires_major_confirmation %}<div class="flash warning">你的专业信息待确认。<a href="{{ url_for('main.edit_major') }}">前往选择机器人工程或智能制造工程</a></div>{% endif %}
+      {% for category, message in get_flashed_messages(with_categories=true) %}<div class="flash {{ category }}">{{
+        message }}</div>{% endfor %}
+      {% if current_user.is_authenticated and current_user.requires_major_confirmation %}<div class="flash warning">
+        你的专业信息待确认。<a href="{{ url_for('main.edit_major') }}">前往选择机器人工程或智能制造工程</a></div>{% endif %}
     </div>
     {% block content %}{% endblock %}
   </main>
   <footer class="site-footer">
     <div class="container footer-grid">
-      <div><strong>东蒙Hub</strong><p>连接新生、学习资源与校园互助。</p></div>
-      <div class="footer-links"><a href="{{ url_for('main.about') }}">关于我们</a><a href="{{ url_for('main.terms') }}">用户协议</a><a href="{{ url_for('main.privacy') }}">隐私说明</a><a href="{{ url_for('main.community_rules') }}">社区规范</a></div>
-      <div class="footer-contact"><strong>有问题？联系我们</strong><p>扫码添加管理员微信，咨询注册审核或平台使用问题。</p><div class="footer-qr"><figure><img src="{{ url_for('static', filename='img/dogeeer.png', v='1.7.0') }}" alt="管理员微信二维码（一）"><figcaption>管理员微信（一）</figcaption></figure><figure><img src="{{ url_for('static', filename='img/han.png', v='1.7.0') }}" alt="管理员微信二维码（二）"><figcaption>管理员微信（二）</figcaption></figure></div></div>
+      <div><strong>东蒙Hub</strong>
+        <p>连接新生、学习资源与校园互助。</p>
+      </div>
+      <div class="footer-links"><a href="{{ url_for('main.about') }}">关于我们</a><a
+          href="{{ url_for('main.terms') }}">用户协议</a><a href="{{ url_for('main.privacy') }}">隐私说明</a><a
+          href="{{ url_for('main.community_rules') }}">社区规范</a></div>
+      <div class="footer-contact"><strong>有问题？联系我们</strong>
+        <p>扫码添加管理员微信，咨询注册审核或平台使用问题。</p>
+        <div class="footer-qr">
+          <figure><img src="{{ url_for('static', filename='img/dogeeer.png', v='1.7.0') }}" alt="管理员微信二维码（一）">
+            <figcaption>管理员微信（一）</figcaption>
+          </figure>
+          <figure><img src="{{ url_for('static', filename='img/han.png', v='1.7.0') }}" alt="管理员微信二维码（二）">
+            <figcaption>管理员微信（二）</figcaption>
+          </figure>
+        </div>
+      </div>
     </div>
-    <div class="container disclaimer">本平台由学生自发建设，与学校官方无隶属或授权关系。平台信息仅供参考，请以学校官方通知为准。<span class="visit-count">累计访问 {{ site_total_visits }} 人</span></div>
+    <div class="container disclaimer">本平台由学生自发建设，与学校官方无隶属或授权关系。平台信息仅供参考，请以学校官方通知为准。<span class="visit-count">累计访问 {{
+        site_total_visits }} 人</span></div>
   </footer>
-<script src="{{ url_for('static', filename='js/app.js', v='1.10.0') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='1.10.0') }}"></script>
 </body>
+
 </html>

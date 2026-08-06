@@ -20,7 +20,7 @@ def test_admin_list_200(app, client, login):
     login("admin@example.com")
     response = client.get("/admin/ai-knowledge")
     assert response.status_code == 200
-    assert "AI 知识库管理" in response.get_data(as_text=True)
+    assert "东蒙Assistant 知识库管理" in response.get_data(as_text=True)
 
 
 def test_student_forbidden(app, client, login):

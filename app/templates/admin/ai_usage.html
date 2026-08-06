@@ -1,5 +1,5 @@
-{% extends 'base.html' %}{% block title %}AI 用量统计{% endblock %}
-{% block content %}<section class="page-header"><div class="container"><span class="eyebrow">数据分析</span><h1>AI 助手用量统计</h1><p>Token 用量与费用概览。仅记录用量数据，不保存对话内容。</p></div></section><section class="section container">{% include 'admin/_nav.html' %}
+{% extends 'base.html' %}{% block title %}东蒙Assistant 用量统计{% endblock %}
+{% block content %}<section class="page-header"><div class="container"><span class="eyebrow">数据分析</span><h1>东蒙Assistant 用量统计</h1><p>Token 用量与费用概览。仅记录用量数据，不保存对话内容。</p></div></section><section class="section container">{% include 'admin/_nav.html' %}
 <h2 class="subheading">请求量</h2>
 <div class="stats-grid"><div class="stat-card"><strong>{{ totals.requests }}</strong><span>累计提问次数</span></div><div class="stat-card"><strong>{{ today.requests }}</strong><span>今日提问</span></div><div class="stat-card"><strong>{{ month.requests }}</strong><span>本月提问</span></div></div>
 <h2 class="subheading">Token 用量</h2>
@@ -15,5 +15,5 @@
 <div class="table-wrap"><table><thead><tr><th>日期</th><th>提问次数</th><th>总 tokens</th><th>费用（元）</th></tr></thead><tbody>{% for day, count, tokens, cost in daily %}<tr><td>{{ day }}</td><td>{{ count }}</td><td>{{ tokens }}</td><td>{{ format_cost(cost) }}</td></tr>{% endfor %}</tbody></table></div>
 {% endif %}
 <h2 class="subheading">最近调用</h2>
-{% if recent %}<div class="table-wrap"><table><thead><tr><th>时间</th><th>用户</th><th>模型</th><th>输入</th><th>输出</th><th>总 tokens</th><th>费用（元）</th></tr></thead><tbody>{% for item in recent %}<tr><td>{{ cn_time(item.created_at) }}</td><td>{{ item.user.nickname if item.user else '-' }}</td><td>{{ item.model }}</td><td>{{ item.prompt_tokens }}</td><td>{{ item.completion_tokens }}</td><td>{{ item.total_tokens }}</td><td>{{ format_cost(item.cost) }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty">AI 助手还没有调用记录。</div>{% endif %}
+{% if recent %}<div class="table-wrap"><table><thead><tr><th>时间</th><th>用户</th><th>模型</th><th>输入</th><th>输出</th><th>总 tokens</th><th>费用（元）</th></tr></thead><tbody>{% for item in recent %}<tr><td>{{ cn_time(item.created_at) }}</td><td>{{ item.user.nickname if item.user else '-' }}</td><td>{{ item.model }}</td><td>{{ item.prompt_tokens }}</td><td>{{ item.completion_tokens }}</td><td>{{ item.total_tokens }}</td><td>{{ format_cost(item.cost) }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty">东蒙Assistant 还没有调用记录。</div>{% endif %}
 </section>{% endblock %}

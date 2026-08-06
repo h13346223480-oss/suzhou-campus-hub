@@ -1,4 +1,5 @@
 from io import StringIO
+import re
 
 from flask import abort
 
@@ -107,7 +108,9 @@ def test_public_pages_and_error_pages_keep_nonofficial_notice(client, app):
     for path in ["/", "/about", "/terms", "/privacy", "/community-rules", "/auth/login", "/auth/register", "/auth/forgot-password"]:
         response = client.get(path)
         assert response.status_code == 200
-        assert "学生自发 · 非官方" in response.text
+        # 模板被格式化器拆行，先归一化空白再断言
+        normalized = re.sub(r"\s+", " ", response.text)
+        assert "学生自发 · 非官方" in normalized
         assert "与学校官方无隶属或授权关系" in response.text
 
     not_found = client.get("/this-page-does-not-exist")
@@ -191,16 +194,16 @@ def test_register_page_has_photo_upload_and_no_invite_modal(client):
 
 def test_blue_006dae_is_part_of_theme(client):
     css = client.get("/static/css/site.css?v=1.9.0").get_data(as_text=True)
-    assert "linear-gradient(135deg,#006DAE,var(--mint-deep))" in css
-    assert "a:hover{color:var(--blue)}" in css
-    assert "rgba(0,109,174,.16)" in css
-    assert "--blue-deep:#005a93" in css
+    assert "linear-gradient(135deg, #006DAE, var(--mint-deep))" in css
+    assert "a:hover {\n  color: var(--blue)" in css
+    assert "rgba(0, 109, 174, .16)" in css
+    assert "--blue-deep: #005a93" in css
 
 
 def test_article_body_has_normal_line_spacing(client):
     css = client.get("/static/css/site.css?v=1.8.0").get_data(as_text=True)
     assert "white-space:pre-line" not in css
-    assert ".article-body p{margin:.45em 0}" in css
+    assert ".article-body p {\n  margin: .45em 0\n}" in css
 
 
 def test_footer_shows_contact_qr_codes(client):
