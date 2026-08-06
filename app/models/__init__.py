@@ -109,6 +109,61 @@ class PostCategory(db.Model):
     sort_order = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
 
+
+
+class Poll(db.Model):
+    """投票主题：管理员创建，登录学生参与投票。"""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False, default="")
+    ends_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    is_open = db.Column(db.Boolean, nullable=False, default=True)
+    created_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    options = db.relationship(
+        "PollOption", back_populates="poll", cascade="all, delete-orphan",
+        order_by="PollOption.sort_order")
+    votes = db.relationship("Vote", back_populates="poll", cascade="all, delete-orphan")
+
+    @property
+    def is_accepting_votes(self):
+        if not self.is_open:
+            return False
+        if self.ends_at is not None:
+            ends_at = self.ends_at
+            if ends_at.tzinfo is None:
+                ends_at = ends_at.replace(tzinfo=timezone.utc)
+            if ends_at <= utcnow():
+                return False
+        return True
+
+
+class PollOption(db.Model):
+    """投票选项：可附图片或文本描述。"""
+    id = db.Column(db.Integer, primary_key=True)
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"), nullable=False, index=True)
+    title = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(200), nullable=False, default="")
+    image_path = db.Column(db.String(255), nullable=True)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    poll = db.relationship("Poll", back_populates="options")
+    votes = db.relationship("Vote", back_populates="option")
+
+
+class Vote(db.Model):
+    """投票记录：每个投票每个用户限一票。"""
+    __table_args__ = (db.UniqueConstraint("poll_id", "user_id", name="uq_vote_poll_user"),)
+    id = db.Column(db.Integer, primary_key=True)
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id"), nullable=False, index=True)
+    option_id = db.Column(db.Integer, db.ForeignKey("poll_option.id"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    poll = db.relationship("Poll", back_populates="votes")
+    option = db.relationship("PollOption", back_populates="votes")
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
@@ -248,6 +303,33 @@ class Bookmark(db.Model):
 class SiteStat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     total_visits = db.Column(db.Integer, nullable=False, default=0)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+
+
+class AiChatUsage(db.Model):
+    """AI 助手调用用量：仅记录 token 用量与费用，不保存对话内容（最小化收集个人信息）。"""
+    __table_args__ = (db.Index("ix_ai_chat_usage_created", "created_at"),)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    model = db.Column(db.String(60), nullable=False)
+    prompt_tokens = db.Column(db.Integer, nullable=False, default=0)
+    completion_tokens = db.Column(db.Integer, nullable=False, default=0)
+    total_tokens = db.Column(db.Integer, nullable=False, default=0)
+    cost = db.Column(db.Numeric(12, 6), nullable=False, default=0)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
+    user = db.relationship("User")
+
+
+class AiKnowledge(db.Model):
+    """AI 助手知识库条目：管理员维护的问答/事实，仅用于给模型提供上下文，不含用户个人信息。"""
+    __table_args__ = (db.Index("ix_ai_knowledge_updated", "updated_at"),)
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    keywords = db.Column(db.String(255), nullable=False, default="")
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
 
 

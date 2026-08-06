@@ -5,7 +5,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
+try:
+    load_dotenv(BASE_DIR / ".env")
+except OSError:
+    # 生产由 systemd EnvironmentFile 注入环境变量；.env 权限受限时静默跳过，
+    # 避免应用因无法读取环境文件而崩溃。
+    pass
 
 
 def env_bool(name, default=False):
@@ -46,6 +51,15 @@ class Config:
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
     LOG_REQUESTS = env_bool("LOG_REQUESTS", True)
     PREFERRED_URL_SCHEME = "http"
+    # AI 助手（DeepSeek，OpenAI 兼容接口）
+    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
+    DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
+    AI_REQUEST_TIMEOUT = int(os.getenv("AI_REQUEST_TIMEOUT", "60"))
+    # 价格单位：元/百万 tokens（deepseek-v4-flash 官方平时价，可在 .env 中覆盖）
+    DEEPSEEK_INPUT_PRICE_PER_1M = float(os.getenv("DEEPSEEK_INPUT_PRICE_PER_1M", "1"))
+    DEEPSEEK_INPUT_CACHE_HIT_PRICE_PER_1M = float(os.getenv("DEEPSEEK_INPUT_CACHE_HIT_PRICE_PER_1M", "0.02"))
+    DEEPSEEK_OUTPUT_PRICE_PER_1M = float(os.getenv("DEEPSEEK_OUTPUT_PRICE_PER_1M", "2"))
 
 
 class DevelopmentConfig(Config):

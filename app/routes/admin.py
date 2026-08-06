@@ -10,7 +10,9 @@ from sqlalchemy import or_
 from app.extensions import db
 from app.forms import AdminCreateUserForm, ENGLISH_CATEGORIES, GUIDE_CATEGORIES, LOCATION_CATEGORIES, POST_CATEGORIES, ResetPasswordForm
 from app.majors import PENDING_CONFIRMATION, RESOURCE_MAJOR_CODES, USER_MAJOR_CODES, normalize_resource_major
-from app.models import CampusLocation, Comment, EnglishResource, Guide, InviteCode, InviteRedemption, Post, PostCategory, Report, SiteStat, SurveyResponse, TutorProfile, TutorRequest, User, utcnow
+from app.models import (AiChatUsage, AiKnowledge, CampusLocation, Comment, EnglishResource, Guide,
+                        InviteCode, InviteRedemption, Post, PostCategory, Report, SiteStat, SurveyResponse,
+                        TutorProfile, TutorRequest, User, utcnow)
 from app.utils.security import admin_required, contains_html
 from app.utils.uploads import save_image
 
@@ -87,6 +89,168 @@ def stats():
         "report_pending": Report.query.filter_by(status="pending").count(),
         "survey_response_total": SurveyResponse.query.count(),
     })
+
+
+def _ai_agg(query):
+    row = query.with_entities(
+        db.func.count(AiChatUsage.id),
+        db.func.coalesce(db.func.sum(AiChatUsage.prompt_tokens), 0),
+        db.func.coalesce(db.func.sum(AiChatUsage.completion_tokens), 0),
+        db.func.coalesce(db.func.sum(AiChatUsage.total_tokens), 0),
+        db.func.coalesce(db.func.sum(AiChatUsage.cost), 0),
+    ).one()
+    return {
+        "requests": row[0],
+        "prompt_tokens": int(row[1]),
+        "completion_tokens": int(row[2]),
+        "total_tokens": int(row[3]),
+        "cost": float(row[4]),
+    }
+
+
+def _format_cost(value):
+    return ("%.6f" % value).rstrip("0").rstrip(".") or "0"
+
+
+def _cn_time(value):
+    if value is None:
+        return "-"
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(ZoneInfo("Asia/Shanghai")).strftime("%m月%d日 %H:%M")
+
+
+@bp.route("/ai-usage")
+@admin_required
+def ai_usage():
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    base = AiChatUsage.query
+    totals = _ai_agg(base)
+    today = _ai_agg(base.filter(AiChatUsage.created_at >= today_start))
+    month = _ai_agg(base.filter(AiChatUsage.created_at >= month_start))
+
+    per_user = (db.session.query(
+        User.nickname,
+        User.email,
+        db.func.count(AiChatUsage.id),
+        db.func.coalesce(db.func.sum(AiChatUsage.total_tokens), 0),
+        db.func.coalesce(db.func.sum(AiChatUsage.cost), 0),
+    )
+        .join(AiChatUsage, AiChatUsage.user_id == User.id)
+        .group_by(User.id)
+        .order_by(db.func.coalesce(db.func.sum(AiChatUsage.total_tokens), 0).desc())
+        .limit(10).all())
+
+    daily = (db.session.query(
+        db.func.date(AiChatUsage.created_at),
+        db.func.count(AiChatUsage.id),
+        db.func.coalesce(db.func.sum(AiChatUsage.total_tokens), 0),
+        db.func.coalesce(db.func.sum(AiChatUsage.cost), 0),
+    )
+        .filter(AiChatUsage.created_at >= now - timedelta(days=30))
+        .group_by(db.func.date(AiChatUsage.created_at))
+        .order_by(db.func.date(AiChatUsage.created_at).desc())
+        .all())
+
+    recent = AiChatUsage.query.order_by(AiChatUsage.id.desc()).limit(20).all()
+    return render_template(
+        "admin/ai_usage.html",
+        totals=totals,
+        today=today,
+        month=month,
+        per_user=per_user,
+        daily=daily,
+        recent=recent,
+        format_cost=_format_cost,
+        cn_time=_cn_time,
+    )
+
+
+# ---------- AI 知识库管理 ----------
+
+MAX_KNOWLEDGE_TITLE = 120
+MAX_KNOWLEDGE_CONTENT = 4000
+MAX_KNOWLEDGE_KEYWORDS = 255
+
+
+def _knowledge_clean_form():
+    """校验知识库表单，返回 (title, content, keywords, is_active)；失败时返回 None 并写入 flash。"""
+    title = request.form.get("title", "").strip()
+    content = request.form.get("content", "").strip()
+    keywords = request.form.get("keywords", "").strip()
+    if not title or len(title) > MAX_KNOWLEDGE_TITLE or contains_html(title):
+        flash("请填写有效的标题（120 字以内，不含 HTML）。", "danger")
+        return None
+    if not content or len(content) > MAX_KNOWLEDGE_CONTENT or contains_html(content):
+        flash("请填写有效的内容（4000 字以内，不含 HTML）。", "danger")
+        return None
+    if len(keywords) > MAX_KNOWLEDGE_KEYWORDS or contains_html(keywords):
+        flash("关键词不能超过 255 字或包含 HTML 标签。", "danger")
+        return None
+    return title, content, keywords, request.form.get("is_active") == "on"
+
+
+@bp.route("/ai-knowledge")
+@admin_required
+def ai_knowledge():
+    entries = AiKnowledge.query.order_by(AiKnowledge.updated_at.desc()).all()
+    return render_template("admin/ai_knowledge.html", entries=entries)
+
+
+@bp.route("/ai-knowledge/create", methods=["GET", "POST"])
+@admin_required
+def ai_knowledge_create():
+    if request.method == "POST":
+        cleaned = _knowledge_clean_form()
+        if cleaned is None:
+            return redirect(url_for("admin.ai_knowledge_create"))
+        title, content, keywords, is_active = cleaned
+        db.session.add(AiKnowledge(title=title, content=content, keywords=keywords, is_active=is_active))
+        db.session.commit()
+        flash("知识条目已添加。", "success")
+        return redirect(url_for("admin.ai_knowledge"))
+    return render_template("admin/ai_knowledge_form.html", entry=None)
+
+
+@bp.route("/ai-knowledge/<int:knowledge_id>/edit", methods=["GET", "POST"])
+@admin_required
+def ai_knowledge_edit(knowledge_id):
+    entry = db.get_or_404(AiKnowledge, knowledge_id)
+    if request.method == "POST":
+        cleaned = _knowledge_clean_form()
+        if cleaned is None:
+            return redirect(url_for("admin.ai_knowledge_edit", knowledge_id=entry.id))
+        title, content, keywords, is_active = cleaned
+        entry.title = title
+        entry.content = content
+        entry.keywords = keywords
+        entry.is_active = is_active
+        db.session.commit()
+        flash("知识条目已更新。", "success")
+        return redirect(url_for("admin.ai_knowledge"))
+    return render_template("admin/ai_knowledge_form.html", entry=entry)
+
+
+@bp.route("/ai-knowledge/<int:knowledge_id>/toggle", methods=["POST"])
+@admin_required
+def ai_knowledge_toggle(knowledge_id):
+    entry = db.get_or_404(AiKnowledge, knowledge_id)
+    entry.is_active = not entry.is_active
+    db.session.commit()
+    flash("知识条目已{}。".format("启用" if entry.is_active else "停用"), "success")
+    return redirect(url_for("admin.ai_knowledge"))
+
+
+@bp.route("/ai-knowledge/<int:knowledge_id>/delete", methods=["POST"])
+@admin_required
+def ai_knowledge_delete(knowledge_id):
+    entry = db.get_or_404(AiKnowledge, knowledge_id)
+    db.session.delete(entry)
+    db.session.commit()
+    flash("知识条目已删除。", "success")
+    return redirect(url_for("admin.ai_knowledge"))
 
 
 @bp.route("/users")

@@ -6,7 +6,7 @@
   <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
   <script>try{var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}</script>
   <title>{% block title %}东蒙Hub{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.10.1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.14.1') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.1.0') }}">
 </head>
 <body>
@@ -18,7 +18,7 @@
         <a href="{{ url_for('posts.index') }}">信息广场</a>
         <a href="{{ url_for('guides.index') }}">新生指南</a>
         <a href="{{ url_for('guides.campus_map') }}">校园地图</a>
-        <a href="{{ url_for('english_hub.index') }}">全英课堂</a>
+        <a href="{{ url_for('english_hub.index') }}">全英课堂</a><a href="{{ url_for('polls.index') }}">投票</a>
         {% if config.FEATURE_TUTORING_PUBLIC %}<a href="{{ url_for('tutoring.index') }}">家教服务</a>{% endif %}
         {% if current_user.is_authenticated %}
           {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}
