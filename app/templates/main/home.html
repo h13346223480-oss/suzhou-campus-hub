@@ -58,8 +58,7 @@
     <p>历经多轮大规模升级与打磨，东蒙Hub 现已拥有完善的<b>论坛系统</b>与<b>新生指南信息发布系统</b>，更有重磅登场的<b>东蒙Assistant</b>——AI 助手已接通东蒙数据库，整合海量最新消息，一键即可掌握东蒙最新动态！</p>
     <p class="welcome-sub">论坛仍在蓬勃发展，欢迎您踊跃发帖、畅所欲言，您的每一份心声，都是我们前进的动力！</p>
     <div class="welcome-actions">
-      <button type="button" class="btn primary" id="welcomeGoAi">开始使用东蒙Assistant</button>
-      <button type="button" class="btn secondary" data-wclose>知道了</button>
+      <button type="button" class="btn primary" data-wclose>开始探索</button>
     </div>
   </div>
 </div>
@@ -165,14 +164,6 @@
   if (welcome) {
     var wclosers = welcome.querySelectorAll('[data-wclose]');
     for (var wc = 0; wc < wclosers.length; wc++) { wclosers[wc].addEventListener('click', closeWelcome); }
-    var goAi = document.getElementById('welcomeGoAi');
-    if (goAi) {
-      goAi.addEventListener('click', function () {
-        closeWelcome();
-        goto(1);
-        openAi();
-      });
-    }
   }
   var urlParams = new URLSearchParams(window.location.search);
   var fromAi = urlParams.get('ai') === '1';
