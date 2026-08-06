@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 
 from app.extensions import db
@@ -15,6 +15,7 @@ def register():
         return redirect(url_for("main.home"))
     form = RegisterForm()
     if form.validate_on_submit():
+        register_type = (form.register_type.data or "campus").strip()
         invite = None
         code = (form.invite_code.data or "").strip()
         if code:
@@ -25,7 +26,14 @@ def register():
                 photo_path = save_id_photo(form.student_id_photo.data)
             except ValueError as exc:
                 form.student_id_photo.errors.append(str(exc))
-        if not form.student_id_photo.errors:
+        if register_type == "invite":
+            if not code:
+                form.invite_code.errors.append("邀请码注册需要填写有效邀请码。")
+            elif not invite:
+                form.invite_code.errors.append("邀请码无效、已用完或已过期，请核对后重试。")
+        elif not form.student_id_photo.data:
+            form.student_id_photo.errors.append("请上传校园卡人像面照片。")
+        if not form.student_id_photo.errors and not form.invite_code.errors:
             verified = invite is not None
             user = User(
                 email=form.email.data.lower().strip(),
@@ -44,6 +52,7 @@ def register():
                 db.session.add(InviteRedemption(invite_code_id=invite.id, user_id=user.id))
             db.session.commit()
             flash("注册成功，你现在可以使用校园社区功能。" if verified else "注册成功，请等待管理员审核，审核通过后即可使用完整功能。", "success")
+            session["avatar_guide_pending"] = True
             return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
 

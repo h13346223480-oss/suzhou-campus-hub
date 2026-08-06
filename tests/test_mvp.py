@@ -6,6 +6,7 @@ from app.models import InviteRedemption, Post, Report, User
 
 def test_register_and_login(client, app):
     response = client.post("/auth/register", data={
+        "register_type": "invite",
         "email": "new@example.com", "nickname": "新同学", "major": "new_energy_science_engineering", "enrollment_year": 2026,
         "invite_code": "TEST2026", "student_id_photo": photo_upload(),
         "password": "StrongPass123!", "confirm_password": "StrongPass123!", "accept_terms": "y",

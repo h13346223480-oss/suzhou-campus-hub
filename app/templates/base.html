@@ -1,3 +1,4 @@
+{% from 'macros/_avatar.html' import avatar %}
 <!doctype html>
 <html lang="zh-CN">
 
@@ -7,7 +8,7 @@
   <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
   <script>try { var t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t) } catch (e) { document.documentElement.setAttribute('data-theme', 'light') }</script>
   <title>{% block title %}东蒙Hub{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.17.0') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.20.0') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.1.0') }}">
 </head>
 
@@ -38,7 +39,8 @@
         {% if config.FEATURE_TUTORING_PUBLIC %}<a href="{{ url_for('tutoring.index') }}">家教服务</a>{% endif %}
         {% if current_user.is_authenticated %}
         {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}
-        <a href="{{ url_for('main.profile') }}">{{ current_user.nickname }}</a>
+        <a class="nav-user" href="{{ url_for('main.profile') }}">{{ avatar(current_user) }}{{ current_user.nickname
+          }}</a>
         <form action="{{ url_for('auth.logout') }}" method="post" class="inline"><input type="hidden" name="csrf_token"
             value="{{ csrf_token() }}"><button class="link-button">退出</button></form>
         {% else %}
@@ -108,6 +110,40 @@
     <div class="container disclaimer">本平台由学生自发建设，与学校官方无隶属或授权关系。平台信息仅供参考，请以学校官方通知为准。<span class="visit-count">累计访问 {{
         site_total_visits }} 人</span></div>
   </footer>
+  {% if current_user.is_authenticated and not current_user.avatar and session.get('avatar_guide_pending') %}
+  <div class="welcome-modal avatar-guide" id="avatarGuideModal" role="dialog" aria-modal="true" aria-labelledby="avatarGuideTitle">
+    <div class="welcome-overlay" data-aguide-close></div>
+    <div class="welcome-card">
+      <button type="button" class="welcome-close" data-aguide-close aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <span class="welcome-badge">完善个人资料</span>
+      <h2 id="avatarGuideTitle">设置你的头像</h2>
+      <p>上传一张头像，让大家在论坛和评论中更容易认出你。昵称与头像都可以在用户中心随时修改。</p>
+      <div class="welcome-actions">
+        <a class="btn primary" id="avatarGuideGo" href="{{ url_for('main.profile') }}">去设置头像</a>
+        <button type="button" class="btn secondary" data-aguide-close>暂不</button>
+      </div>
+      <form id="avatarGuideDismiss" method="post" action="{{ url_for('main.avatar_dismiss') }}" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var modal = document.getElementById('avatarGuideModal');
+      if (!modal) { return; }
+      function dismissGuide() {
+        modal.classList.remove('open');
+        var form = document.getElementById('avatarGuideDismiss');
+        if (form) {
+          fetch(form.getAttribute('action'), { method: 'POST', body: new FormData(form), credentials: 'same-origin' }).catch(function () {});
+        }
+      }
+      var closers = modal.querySelectorAll('[data-aguide-close]');
+      for (var i = 0; i < closers.length; i++) { closers[i].addEventListener('click', dismissGuide); }
+      var go = document.getElementById('avatarGuideGo');
+      if (go) { go.addEventListener('click', dismissGuide); }
+      modal.classList.add('open');
+    })();
+  </script>
+  {% endif %}
   <script src="{{ url_for('static', filename='js/app.js', v='1.10.0') }}"></script>
 </body>
 

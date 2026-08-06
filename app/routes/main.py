@@ -1,12 +1,15 @@
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from pathlib import Path
+
+from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
 from app.extensions import db
-from app.forms import MajorForm, PasswordForm
+from app.forms import AvatarForm, MajorForm, PasswordForm, ProfileForm
 from app.majors import PENDING_CONFIRMATION_CHOICES
 from app.models import Bookmark, EnglishResource, Guide, Post, Survey, SurveyResponse, TutorProfile
 from app.services.surveys import availability
+from app.utils.uploads import save_image
 
 bp = Blueprint("main", __name__)
 
@@ -68,16 +71,75 @@ def community_rules():
     return render_template("main/community_rules.html")
 
 
-@bp.route("/profile")
+@bp.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
+    form = ProfileForm(obj=current_user)
+    if form.validate_on_submit():
+        nickname = form.nickname.data.strip()
+        if nickname == current_user.nickname:
+            return redirect(url_for("main.profile"))
+        current_user.nickname = nickname
+        db.session.commit()
+        flash("昵称已更新。", "success")
+        return redirect(url_for("main.profile"))
     posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.created_at.desc()).all()
     bookmarks = Bookmark.query.filter_by(user_id=current_user.id).order_by(Bookmark.created_at.desc()).all()
     tutor_profile = TutorProfile.query.filter_by(user_id=current_user.id).first()
     survey_responses = SurveyResponse.query.filter_by(user_id=current_user.id, is_valid=True).order_by(
         SurveyResponse.submitted_at.desc()).limit(5).all()
-    return render_template("main/profile.html", posts=posts, bookmarks=bookmarks, tutor_profile=tutor_profile,
-                           survey_responses=survey_responses)
+    return render_template("main/profile.html", form=form, avatar_form=AvatarForm(), posts=posts,
+                           bookmarks=bookmarks, tutor_profile=tutor_profile, survey_responses=survey_responses)
+
+
+@bp.route("/profile/avatar", methods=["POST"])
+@login_required
+def upload_avatar():
+    form = AvatarForm()
+    if form.validate_on_submit():
+        try:
+            path = save_image(form.avatar.data)
+        except ValueError as exc:
+            flash(str(exc), "danger")
+            return redirect(url_for("main.profile"))
+        old_path = current_user.avatar
+        current_user.avatar = path
+        session.pop("avatar_guide_pending", None)
+        db.session.commit()
+        if old_path:
+            try:
+                (Path(current_app.config["UPLOAD_FOLDER"]) / old_path.split("/", 1)[-1]).unlink(missing_ok=True)
+            except OSError:
+                pass
+        flash("头像已更新。", "success")
+        return redirect(url_for("main.profile"))
+    for errors in form.errors.values():
+        for error in errors:
+            flash(error, "danger")
+    return redirect(url_for("main.profile"))
+
+
+@bp.route("/profile/avatar-remove", methods=["POST"])
+@login_required
+def remove_avatar():
+    old_path = current_user.avatar
+    current_user.avatar = None
+    db.session.commit()
+    if old_path:
+        try:
+            (Path(current_app.config["UPLOAD_FOLDER"]) / old_path.split("/", 1)[-1]).unlink(missing_ok=True)
+        except OSError:
+            pass
+    flash("已移除头像。", "success")
+    return redirect(url_for("main.profile"))
+
+
+@bp.route("/profile/avatar-dismiss", methods=["POST"])
+@login_required
+def avatar_dismiss():
+    """关闭头像引导弹窗：注册后的首次头像引导不再展示。"""
+    session.pop("avatar_guide_pending", None)
+    return "", 204
 
 
 @bp.route("/change-password", methods=["GET", "POST"])

@@ -76,6 +76,7 @@ def test_generated_invite_registers_one_verified_student_with_usage_record(clien
         code = invite.code
 
     response = client.post("/auth/register", data={
+        "register_type": "invite",
         "nickname": "内测注册验收",
         "email": "invite-release@example.com",
         "major": "robotics_engineering",

@@ -50,6 +50,7 @@ def test_register_page_has_four_distinct_controlled_major_choices(client):
 
 def test_registration_persists_authoritative_major_code(client, app):
     response = client.post("/auth/register", data={
+        "register_type": "invite",
         "email": "major-code@example.com",
         "nickname": "专业代码同学",
         "major": INTELLIGENT_MANUFACTURING_ENGINEERING,

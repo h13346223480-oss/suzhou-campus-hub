@@ -4701,6 +4701,7 @@ main {
   from {
     opacity: 0
   }
+
   to {
     opacity: 1
   }
@@ -4711,8 +4712,232 @@ main {
     opacity: 0;
     transform: translateY(18px) scale(.96)
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1)
+  }
+}
+
+/* ===== 用户头像 ===== */
+.mini-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+  flex: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .08)
+}
+
+.mini-avatar.fallback {
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(135deg, #006DAE, var(--mint-deep));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800
+}
+
+.author-line {
+  display: inline-flex;
+  align-items: center
+}
+
+.nav-user {
+  display: inline-flex;
+  align-items: center
+}
+
+[data-theme="light"] .mini-avatar {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .9)
+}
+
+.avatar-guide {
+  z-index: 210
+}
+
+/* 用户中心头像与昵称编辑 */
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line)
+}
+
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  flex: none;
+  overflow: hidden;
+  background: linear-gradient(135deg, #006DAE, var(--mint-deep));
+  box-shadow: 0 10px 26px rgba(0, 109, 174, .35)
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+
+.profile-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 38px;
+  font-weight: 800
+}
+
+.profile-avatar-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px
+}
+
+.avatar-file-input {
+  display: none
+}
+
+.avatar-hint {
+  margin: 0;
+  font-size: 12px
+}
+
+.profile-nickname-form {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line)
+}
+
+.profile-nickname-form .field-label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 14px
+}
+
+.profile-nickname-form .field-row {
+  display: flex;
+  gap: 8px
+}
+
+.profile-nickname-form .field-row .input {
+  flex: 1;
+  padding: 9px 11px
+}
+
+/* ===== 注册方式选择 ===== */
+.register-type-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px
+}
+
+.type-option {
+  display: block;
+  cursor: pointer
+}
+
+.type-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none
+}
+
+.type-card {
+  display: block;
+  border: 1px solid rgba(77, 166, 232, .38);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(145deg, rgba(0, 109, 174, .16), rgba(155, 109, 255, .11));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  transition: .18s
+}
+
+.type-card strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px
+}
+
+.type-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px
+}
+
+.type-option:hover .type-card {
+  border-color: var(--blue-bright)
+}
+
+.type-option input:checked+.type-card {
+  border-color: var(--blue-bright);
+  background: rgba(0, 109, 174, .14);
+  box-shadow: 0 0 0 3px rgba(0, 109, 174, .18)
+}
+
+.invite-get {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--blue-bright)
+}
+
+.invite-get:hover {
+  color: var(--purple)
+}
+
+.admin-wechat {
+  list-style: none;
+  margin: 18px 0 22px;
+  padding: 0;
+  display: grid;
+  gap: 10px
+}
+
+.admin-wechat li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(77, 166, 232, .38);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(0, 109, 174, .14), rgba(155, 109, 255, .10));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06)
+}
+
+.admin-wechat strong {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #006DAE, var(--mint-deep));
+  color: #fff;
+  font-size: 12px
+}
+
+.admin-wechat span {
+  font-weight: 700;
+  word-break: break-all
+}
+
+.map-dev-notice {
+  margin-bottom: 26px
+}
+
+@media (max-width: 600px) {
+  .register-type-picker {
+    grid-template-columns: 1fr
   }
 }

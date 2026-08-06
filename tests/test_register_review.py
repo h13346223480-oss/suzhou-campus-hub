@@ -4,8 +4,9 @@ from app.extensions import db
 from app.models import InviteRedemption, User
 
 
-def _register(client, email, photo=True, invite="", password="StrongPass123!"):
+def _register(client, email, photo=True, invite="", password="StrongPass123!", register_type="campus"):
     data = {
+        "register_type": register_type,
         "email": email,
         "nickname": "注册审核同学",
         "major": "robotics_engineering",
@@ -21,9 +22,13 @@ def _register(client, email, photo=True, invite="", password="StrongPass123!"):
     return client.post("/auth/register", data=data, content_type="multipart/form-data", follow_redirects=True)
 
 
-def test_register_page_hints_invite_skips_review(client):
+def test_register_page_has_two_methods_and_wechat(client):
     text = client.get("/auth/register").get_data(as_text=True)
-    assert "填写有效邀请码可立即认证通过" in text
+    assert "校园卡注册" in text
+    assert "邀请码注册" in text
+    assert "获取邀请码" in text
+    assert "k1696783681" in text
+    assert "hanzhongjie2008" in text
 
 
 def test_register_without_invite_creates_pending_user_with_photo(client, app, tmp_path):
@@ -92,6 +97,7 @@ def test_admin_verify_grants_community_permission(client, app, login):
 def test_register_rejects_fake_photo(client, app):
     from io import BytesIO
     data = {
+        "register_type": "campus",
         "email": "fake-photo@example.com",
         "nickname": "伪造照片同学",
         "major": "robotics_engineering",
@@ -105,3 +111,34 @@ def test_register_rejects_fake_photo(client, app):
     assert "图片内容无效" in response.get_data(as_text=True)
     with app.app_context():
         assert User.query.filter_by(email="fake-photo@example.com").first() is None
+
+
+def test_invite_method_without_photo_is_verified(client, app):
+    response = _register(client, "invite-nophoto@example.com", photo=False, invite="TEST2026", register_type="invite")
+    assert "你现在可以使用校园社区功能" in response.get_data(as_text=True)
+    with app.app_context():
+        user = User.query.filter_by(email="invite-nophoto@example.com").one()
+        assert user.verification_status == "verified"
+        assert user.joined_via_invite is True
+        assert user.student_id_photo is None
+
+
+def test_invite_method_requires_code(client, app):
+    response = _register(client, "invite-nocode@example.com", photo=False, register_type="invite")
+    assert "邀请码注册需要填写有效邀请码" in response.get_data(as_text=True)
+    with app.app_context():
+        assert User.query.filter_by(email="invite-nocode@example.com").first() is None
+
+
+def test_invite_method_rejects_invalid_code(client, app):
+    response = _register(client, "invite-badcode@example.com", photo=False, invite="WRONG-CODE", register_type="invite")
+    assert "邀请码无效" in response.get_data(as_text=True)
+    with app.app_context():
+        assert User.query.filter_by(email="invite-badcode@example.com").first() is None
+
+
+def test_campus_method_with_invite_is_still_verified(client, app):
+    response = _register(client, "campus-withcode@example.com", invite="TEST2026")
+    assert "你现在可以使用校园社区功能" in response.get_data(as_text=True)
+    with app.app_context():
+        assert User.query.filter_by(email="campus-withcode@example.com").one().verification_status == "verified"

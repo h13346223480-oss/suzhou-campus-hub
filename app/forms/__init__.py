@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField, FileSize
-from wtforms import BooleanField, DateTimeLocalField, IntegerField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, DateTimeLocalField, IntegerField, PasswordField, RadioField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional, ValidationError
 
 from app.models import InviteCode, User
@@ -22,16 +22,20 @@ def no_html(_form, field):
 
 
 class RegisterForm(FlaskForm):
+    register_type = RadioField("注册方式", choices=[
+        ("campus", "校园卡注册（需管理员审核）"),
+        ("invite", "邀请码注册（免审核）"),
+    ], validators=[DataRequired(message="请先选择注册方式。")])
     email = StringField("邮箱", validators=[DataRequired(), Email(), Length(max=255)])
     nickname = StringField("昵称", validators=[DataRequired(), Length(min=2, max=40), no_html])
     major = SelectField("专业", choices=STUDENT_MAJOR_CHOICES)
     enrollment_year = IntegerField("入学年份", validators=[DataRequired(), NumberRange(min=2020, max=2100)])
     student_id_photo = FileField("校园卡人像面照片", validators=[
-        DataRequired(message="请上传校园卡人像面照片。"),
+        Optional(),
         FileAllowed(ALLOWED_EXTENSIONS, "仅支持 jpg、jpeg、png 或 webp 图片"),
         FileSize(max_size=5 * 1024 * 1024, message="照片大小不能超过 5MB。"),
     ])
-    invite_code = StringField("邀请码（选填）", validators=[Optional(), Length(max=64)])
+    invite_code = StringField("邀请码", validators=[Optional(), Length(max=64)])
     password = PasswordField("密码", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("确认密码", validators=[DataRequired(), EqualTo("password", message="两次密码输入不一致")])
     accept_terms = BooleanField("我已阅读并同意用户协议与社区规范", validators=[DataRequired()])
@@ -98,6 +102,19 @@ class PasswordForm(FlaskForm):
     new_password = PasswordField("新密码", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("确认新密码", validators=[DataRequired(), EqualTo("new_password", message="两次密码输入不一致")])
     submit = SubmitField("修改密码")
+
+
+class ProfileForm(FlaskForm):
+    nickname = StringField("昵称", validators=[DataRequired(), Length(min=2, max=40), no_html])
+    submit = SubmitField("保存昵称")
+
+
+class AvatarForm(FlaskForm):
+    avatar = FileField("头像", validators=[
+        FileAllowed(ALLOWED_EXTENSIONS, "仅支持 jpg、jpeg、png 或 webp 图片"),
+        FileSize(max_size=2 * 1024 * 1024, message="头像大小不能超过 2MB。"),
+    ])
+    submit = SubmitField("上传头像")
 
 
 class MajorForm(FlaskForm):

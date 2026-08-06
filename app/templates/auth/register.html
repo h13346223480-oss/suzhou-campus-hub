@@ -1,1 +1,59 @@
-{% extends 'base.html' %}{% block title %}注册{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">加入社区</span><h1>创建学生账号</h1><p>请上传校园卡人像面照片完成身份核验。注册后需管理员人工审核，审核通过即可使用校园社区功能；持管理员发放的邀请码可填选填项免去等待。</p><form method="post" enctype="multipart/form-data" class="form-card">{{ form.hidden_tag() }}{% for field in form if field.type not in ['CSRFTokenField','SubmitField','HiddenField'] %}{% if field.type == 'BooleanField' %}<label class="check-row">{{ field() }} <span>{{ field.label.text }}</span></label>{% else %}<div class="field">{{ field.label }}{% if field.name == 'student_id_photo' %}{{ field(class='input') }}<small class="field-hint">仅用于身份审核，仅管理员可见。支持 jpg / jpeg / png / webp，不超过 5MB。</small>{% elif field.name == 'invite_code' %}{{ field(class='input') }}<small class="field-hint">选填：填写有效邀请码可立即认证通过，无需等待管理员审核。</small>{% else %}{{ field(class='input') }}{% endif %}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endif %}{% endfor %}{{ form.submit(class='btn primary') }}</form><div class="privacy-note"><strong>保护你的隐私</strong><p>校园卡人像面照片仅用于身份审核，仅管理员可见，平台不会公开或用于其他用途；如需删除照片，可联系管理员。</p></div><p class="form-note">已有账号？<a href="{{ url_for('auth.login') }}">登录</a></p></section>{% endblock %}
+{% extends 'base.html' %}{% block title %}注册{% endblock %}{% block content %}<section class="form-page container narrow"><span class="eyebrow">加入社区</span><h1>创建学生账号</h1><p>请先选择注册方式，再开始填写信息。</p><form method="post" enctype="multipart/form-data" class="form-card register-form">{{ form.hidden_tag() }}
+<div class="register-type-picker" role="radiogroup" aria-label="选择注册方式">
+  <label class="type-option"><input type="radio" name="register_type" value="campus" {% if form.register_type.data == 'campus' %}checked{% endif %}><span class="type-card"><strong>校园卡注册</strong><small>需管理员审核后使用社区功能</small></span></label>
+  <label class="type-option"><input type="radio" name="register_type" value="invite" {% if form.register_type.data == 'invite' %}checked{% endif %}><span class="type-card"><strong>邀请码注册</strong><small>免审核，立即使用社区功能</small></span></label>
+</div>
+{% for error in form.register_type.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+<div class="register-fields-main" {% if not form.register_type.data %}hidden{% endif %}>
+  <div id="campus-fields" {% if form.register_type.data == 'invite' %}hidden{% endif %}><div class="field">{{ form.student_id_photo.label }}{{ form.student_id_photo(class='input') }}<small class="field-hint">仅用于身份审核，仅管理员可见。支持 jpg / jpeg / png / webp，不超过 5MB。</small>{% for error in form.student_id_photo.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div></div>
+  <div id="invite-fields" {% if form.register_type.data != 'invite' %}hidden{% endif %}><div class="field">{{ form.invite_code.label }}{{ form.invite_code(class='input', placeholder='请输入管理员发放的邀请码') }}<button type="button" class="link-button invite-get" onclick="openInviteModal()">获取邀请码</button>{% for error in form.invite_code.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div></div>
+  <div class="field">{{ form.email.label }}{{ form.email(class='input') }}{% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  <div class="field">{{ form.nickname.label }}{{ form.nickname(class='input') }}{% for error in form.nickname.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  <div class="field">{{ form.major.label }}{{ form.major(class='input') }}{% for error in form.major.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  <div class="field">{{ form.enrollment_year.label }}{{ form.enrollment_year(class='input') }}{% for error in form.enrollment_year.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  <div class="field">{{ form.password.label }}{{ form.password(class='input') }}{% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  <div class="field">{{ form.confirm_password.label }}{{ form.confirm_password(class='input') }}{% for error in form.confirm_password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+  <label class="check-row">{{ form.accept_terms() }} <span>{{ form.accept_terms.label.text }}</span></label>
+  {{ form.submit(class='btn primary') }}
+</div>
+</form><div class="privacy-note"><strong>保护你的隐私</strong><p>校园卡人像面照片仅用于身份审核，仅管理员可见，平台不会公开或用于其他用途；如需删除照片，可联系管理员。</p></div><p class="form-note">已有账号？<a href="{{ url_for('auth.login') }}">登录</a></p></section>
+<div class="welcome-modal" id="inviteModal" role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
+  <div class="welcome-overlay" data-invite-close></div>
+  <div class="welcome-card">
+    <button type="button" class="welcome-close" data-invite-close aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <span class="welcome-badge">获取邀请码</span>
+    <h2 id="inviteTitle">联系管理员获取邀请码</h2>
+    <p>添加管理员微信，说明学生身份即可获取邀请码：</p>
+    <ul class="admin-wechat"><li><strong>1.</strong><span>k1696783681</span></li><li><strong>2.</strong><span>hanzhongjie2008</span></li></ul>
+    <div class="welcome-actions"><button type="button" class="btn primary" data-invite-close>知道了</button></div>
+  </div>
+</div>
+<script>
+(function () {
+  var radios = document.querySelectorAll('input[name="register_type"]');
+  var main = document.querySelector('.register-fields-main');
+  function showMethod(method) {
+    var campus = document.getElementById('campus-fields');
+    var invite = document.getElementById('invite-fields');
+    if (method === 'invite') { campus.hidden = true; invite.hidden = false; }
+    else { campus.hidden = false; invite.hidden = true; }
+    if (main) { main.hidden = false; }
+  }
+  for (var i = 0; i < radios.length; i++) {
+    radios[i].addEventListener('change', function () { showMethod(this.value); });
+  }
+  var checked = document.querySelector('input[name="register_type"]:checked');
+  if (checked) { showMethod(checked.value); }
+  window.openInviteModal = function () {
+    var modal = document.getElementById('inviteModal');
+    if (modal) { modal.classList.add('open'); }
+  };
+  var modal = document.getElementById('inviteModal');
+  if (modal) {
+    var closers = modal.querySelectorAll('[data-invite-close]');
+    for (var j = 0; j < closers.length; j++) {
+      closers[j].addEventListener('click', function () { modal.classList.remove('open'); });
+    }
+  }
+})();
+</script>{% endblock %}

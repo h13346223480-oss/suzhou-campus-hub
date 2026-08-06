@@ -1,0 +1,3 @@
+{% macro avatar(user, cls='') -%}
+{%- if user and user.avatar -%}<img class="mini-avatar {{ cls }}" src="{{ url_for('static', filename=user.avatar) }}" alt="" loading="lazy">{%- elif user -%}<span class="mini-avatar fallback {{ cls }}">{{ user.nickname[:1] }}</span>{%- endif -%}
+{%- endmacro %}

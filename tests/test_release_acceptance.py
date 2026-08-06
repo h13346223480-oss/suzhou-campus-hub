@@ -179,15 +179,17 @@ def test_modern_interaction_assets_are_served(client):
     assert "prefers-reduced-motion" in css.get_data(as_text=True)
 
 
-def test_register_page_has_photo_upload_and_no_invite_modal(client):
+def test_register_page_has_two_methods_and_wechat_modal(client):
     response = client.get("/auth/register")
     assert response.status_code == 200
     text = response.get_data(as_text=True)
-    assert "获取邀请码" not in text
-    assert "invite-qr-modal" not in text
+    assert "校园卡注册" in text
+    assert "邀请码注册" in text
+    assert "获取邀请码" in text
     assert 'name="student_id_photo"' in text
     assert "校园卡人像面照片" in text
-    assert "邀请码（选填）" in text
+    assert "k1696783681" in text
+    assert "hanzhongjie2008" in text
     assert "保护你的隐私" in text
     assert "仅管理员可见" in text
 
