@@ -103,6 +103,24 @@
     searchOverlay.classList.remove('open');
     searchOverlay.setAttribute('aria-hidden', 'true');
   };
+  document.addEventListener('DOMContentLoaded', function () {
+    var navLinks = document.getElementById('navlinks');
+    var navToggle = document.querySelector('.nav-toggle');
+    if (!navLinks || !navToggle) { return; }
+    navLinks.addEventListener('click', function (event) {
+      if (!event.target.closest('a')) { return; }
+      navLinks.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { closeSearch(); }
+    if (e.key === 'Escape') {
+      closeSearch();
+      var navLinks = document.getElementById('navlinks');
+      var navToggle = document.querySelector('.nav-toggle');
+      if (navLinks && navToggle) {
+        navLinks.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }
+    }
   });

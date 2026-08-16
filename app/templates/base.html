@@ -8,8 +8,8 @@
   <meta name="description" content="由学生自发建设的苏州校区生活与学习信息平台">
   <script>try { var t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t) } catch (e) { document.documentElement.setAttribute('data-theme', 'light') }</script>
   <title>{% block title %}东蒙Hub{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.20.0') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.1.0') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css', v='2.21.0') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/surveys.css', v='2.2.0') }}">
 </head>
 
 <body>
@@ -22,7 +22,7 @@
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg></button>
-      <button class="nav-toggle" type="button" aria-label="展开导航" aria-expanded="false"
+      <button class="nav-toggle" type="button" aria-label="展开导航" aria-controls="navlinks" aria-expanded="false"
         onclick="const n=document.getElementById('navlinks');n.classList.toggle('open');this.setAttribute('aria-expanded',n.classList.contains('open'))">菜单</button>
       <div class="nav-links" id="navlinks">
         <form class="nav-search" action="{{ url_for('main.search') }}" method="get" role="search"><svg
@@ -31,11 +31,11 @@
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg><input name="q" type="search" placeholder="搜索全站" aria-label="全局搜索" autocomplete="off"></form>
-        <a href="{{ url_for('posts.index') }}">信息广场</a>
-        <a href="{{ url_for('guides.index') }}">新生指南</a>
-        <a href="{{ url_for('guides.campus_map') }}">校园地图</a>
-        <a href="{{ url_for('english_hub.index') }}">全英课堂</a><a href="{{ url_for('polls.index') }}">投票</a>
-        <a href="{{ url_for('main.home') }}?ai=1">使用东蒙Assistant</a>
+        <a href="{{ url_for('posts.index') }}"{% if request.blueprint == 'posts' %} class="active" aria-current="page"{% endif %}>信息广场</a>
+        <a href="{{ url_for('guides.index') }}"{% if request.endpoint == 'guides.index' %} class="active" aria-current="page"{% endif %}>新生指南</a>
+        <a href="{{ url_for('guides.campus_map') }}"{% if request.endpoint == 'guides.campus_map' %} class="active" aria-current="page"{% endif %}>校园地图</a>
+        <a href="{{ url_for('english_hub.index') }}"{% if request.blueprint == 'english_hub' %} class="active" aria-current="page"{% endif %}>全英课堂</a><a href="{{ url_for('polls.index') }}"{% if request.blueprint == 'polls' %} class="active" aria-current="page"{% endif %}>投票</a>
+        <a class="nav-assistant-link" href="{{ url_for('main.home') }}?ai=1">使用东蒙Assistant</a>
         {% if config.FEATURE_TUTORING_PUBLIC %}<a href="{{ url_for('tutoring.index') }}">家教服务</a>{% endif %}
         {% if current_user.is_authenticated %}
         {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}
@@ -144,7 +144,7 @@
     })();
   </script>
   {% endif %}
-  <script src="{{ url_for('static', filename='js/app.js', v='1.10.0') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='1.11.0') }}"></script>
 </body>
 
 </html>

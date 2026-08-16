@@ -73,7 +73,16 @@
   function goto(i) {
     if (i < 0 || i >= screens.length) { return; }
     idx = i; updateDots();
-    if (shell) { busy = true; shell.scrollTo({top: Math.round(i * shell.clientHeight), behavior: 'smooth'}); setTimeout(function () { busy = false; }, 700); }
+    if (shell) {
+      busy = true;
+      var shellScrolls = window.getComputedStyle(shell).overflowY === 'auto';
+      if (shellScrolls) {
+        shell.scrollTo({top: Math.round(i * shell.clientHeight), behavior: 'smooth'});
+      } else {
+        screens[i].scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      setTimeout(function () { busy = false; }, 700);
+    }
   }
   dots.forEach(function (d) { d.addEventListener('click', function () { goto(parseInt(d.getAttribute('data-i'), 10)); }); });
   if (shell && screens.length > 1 && window.matchMedia('(pointer:fine)').matches) {

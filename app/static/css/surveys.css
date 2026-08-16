@@ -34,3 +34,9 @@
 [data-theme="light"] .status.response-invalid{background:#f4e7e7;color:#884545}
 [data-theme="light"] .question-card legend em{background:#fff0f0;color:#a34343}
 [data-theme="light"] .success-check{background:#e5f6f3;color:#1f7a6e}
+
+/* ===== v2.2.0 手机端响应式收口 ===== */
+.survey-intro,.question-card,.survey-admin-card,.question-admin-card,.share-card,.text-review-card,.answer-block{min-width:0;overflow-wrap:anywhere}
+.matrix-wrap{max-width:100%;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
+@media(max-width:768px){.survey-admin-main,.validity-panel,.danger-zone,.result-card-head,.answer-title{align-items:flex-start;flex-direction:column}.survey-filters,.survey-result-filters,.survey-summary-grid,.analysis-grid,.question-analysis{grid-template-columns:1fr}.validity-panel form,.decision-form{width:100%;min-width:0}.admin-action-grid .btn,.survey-submit{min-height:44px}}
+@media(max-width:480px){.survey-container{width:calc(100% - 32px)}.survey-intro,.question-card,.survey-admin-card,.question-admin-card,.share-card,.text-review-card{padding:18px 16px}.rating-row{gap:6px}.rating-row label span{width:44px;height:44px}.survey-submit,.admin-action-grid .btn{width:100%}.admin-action-grid form{width:100%}}
