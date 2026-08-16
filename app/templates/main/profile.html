@@ -10,7 +10,7 @@
       <div class="profile-avatar-row">
         {% set puser = current_user %}<div class="profile-avatar">{% if puser.avatar %}<img src="{{ url_for('static', filename=puser.avatar) }}" alt="头像">{% else %}<span class="profile-avatar-fallback">{{ puser.nickname[:1] }}</span>{% endif %}</div>
         <div class="profile-avatar-actions">
-          <form method="post" action="{{ url_for('main.upload_avatar') }}" enctype="multipart/form-data" class="inline avatar-upload-form">{{ avatar_form.hidden_tag() }}{{ avatar_form.avatar(id='avatar-file', accept='image/png,image/jpeg,image/webp', class='avatar-file-input') }}<label class="btn secondary small" for="avatar-file">上传头像</label>{{ avatar_form.submit(class='btn primary small', style='display:none') }}</form>
+          <form method="post" action="{{ url_for('main.upload_avatar') }}" enctype="multipart/form-data" class="inline avatar-upload-form">{{ avatar_form.hidden_tag() }}{{ avatar_form.avatar(id='avatar-file', accept='image/png,image/jpeg,image/webp', class='avatar-file-input', onchange='this.form.submit()') }}<label class="btn secondary small" for="avatar-file">上传头像</label>{{ avatar_form.submit(class='btn primary small', style='display:none') }}</form>
           {% if current_user.avatar %}<form method="post" action="{{ url_for('main.remove_avatar') }}" class="inline" onsubmit="return confirm('确认移除头像？');"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn danger small" type="submit">移除头像</button></form>{% endif %}
           <p class="muted avatar-hint">支持 jpg、png、webp，不超过 2MB</p>
         </div>
